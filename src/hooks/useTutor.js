@@ -3,8 +3,8 @@
 // usage limits (30 messages / 40 minutes), and the Anthropic API call.
 // TutorPanel consumes this hook instead of managing its own state.
 //
-// NOTE: The Anthropic API is called directly from the browser in this prototype.
-// In production, route requests through a server-side proxy to protect your API key.
+// API calls go through the local Express proxy in server.js (port 3001).
+// The proxy injects the ANTHROPIC_API_KEY server-side — the key never reaches the browser.
 
 import { useState, useEffect } from "react";
 import { TUTOR_SYSTEM_PROMPT, fmtTimer } from "../data/mockData";
@@ -52,12 +52,12 @@ export function useTutor(activeQuestionIndex, questions) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      // Requests go through the local Express proxy (server.js) which
+      // injects the API key server-side — the key never reaches the browser.
+      const response = await fetch("http://localhost:3001/api/anthropic", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
