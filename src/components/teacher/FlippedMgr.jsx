@@ -87,21 +87,21 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
   const statusGroups = [
     {
       key: "published",
-      label: "Publicados — visibles para estudiantes",
+      label: "Published — visible to students",
       items: sortedItems.filter(
         (item) => flippedStat(item.publishDate) === "published"
       ),
     },
     {
       key: "scheduled",
-      label: "Programados",
+      label: "Scheduled",
       items: sortedItems.filter(
         (item) => flippedStat(item.publishDate) === "scheduled"
       ),
     },
     {
       key: "draft",
-      label: "Borradores",
+      label: "Drafts",
       items: sortedItems.filter(
         (item) => flippedStat(item.publishDate) === "draft"
       ),
@@ -128,7 +128,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
               fontFamily: FONT_SERIF,
             }}
           >
-            Material Flipped
+            Flipped Material
           </h2>
           <p
             style={{
@@ -138,8 +138,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
               fontFamily: FONT_SANS,
             }}
           >
-            Estudiantes ven el material de hoy y días anteriores — disponible
-            para estudiar
+            Students see today's material and previous items — available for review
           </p>
         </div>
         <button
@@ -161,7 +160,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
             flexShrink: 0,
           }}
         >
-          + Nuevo material
+          + New Material
         </button>
       </div>
 
@@ -185,7 +184,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
               fontFamily: FONT_SANS,
             }}
           >
-            {editingId ? "Editar" : "Nuevo material"}
+            {editingId ? "Edit" : "New material"}
           </div>
 
           {/* Content type selector */}
@@ -198,7 +197,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                 fontFamily: FONT_SANS,
               }}
             >
-              Tipo de contenido
+              Content type
             </div>
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
               {Object.entries(CONTENT_TYPES).map(([key, config]) => (
@@ -238,19 +237,19 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <Field
-              label="Título"
+              label="Title"
               value={draft.title}
               onChange={(value) => updateDraft("title", value)}
             />
             <Field
-              label="Unidad / Semana"
+              label="Unit / Week"
               value={draft.unit}
               onChange={(value) => updateDraft("unit", value)}
             />
           </div>
 
           <Field
-            label="Descripción / instrucciones"
+            label="Description / instructions"
             value={draft.description}
             onChange={(value) => updateDraft("description", value)}
             type="textarea"
@@ -267,7 +266,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                   fontFamily: FONT_SANS,
                 }}
               >
-                Fecha de publicación
+                Publish date
               </div>
               <input
                 type="date"
@@ -298,9 +297,9 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                   }}
                 >
                   {draft.publishDate < todayStr()
-                    ? "⚠️ Fecha pasada"
+                    ? "⚠️ Past date"
                     : draft.publishDate === todayStr()
-                    ? "✓ Hoy"
+                    ? "✓ Today"
                     : `◷ ${daysUntil(draft.publishDate)}`}
                 </div>
               )}
@@ -316,7 +315,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                   fontFamily: FONT_SANS,
                 }}
               >
-                Ligar a asignación (opcional)
+                Link to assignment (optional)
               </div>
               <select
                 value={draft.assignmentId || ""}
@@ -337,7 +336,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                   cursor: "pointer",
                 }}
               >
-                <option value="">— Sin asignación —</option>
+                <option value="">— No assignment —</option>
                 {assignments.map((assignment) => (
                   <option key={assignment.id} value={assignment.id}>
                     {assignment.title}
@@ -392,7 +391,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {showPreview ? "Ocultar" : "Preview"}
+                    {showPreview ? "Hide" : "Preview"}
                   </button>
                 )}
             </div>
@@ -453,7 +452,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                 fontFamily: FONT_SANS,
               }}
             >
-              Cancelar
+              Cancel
             </button>
             <button
               onClick={saveItem}
@@ -477,7 +476,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                 fontFamily: FONT_SANS,
               }}
             >
-              Guardar
+              Save
             </button>
           </div>
         </div>
@@ -511,9 +510,9 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                   : "—";
                 const monthLabel = item.publishDate
                   ? new Date(item.publishDate + "T12:00:00")
-                      .toLocaleDateString("es-PR", { month: "short" })
+                      .toLocaleDateString("en-US", { month: "short" })
                       .toUpperCase()
-                  : "SIN FECHA";
+                  : "NO DATE";
 
                 return (
                   <div
@@ -673,7 +672,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                           fontFamily: FONT_SANS,
                         }}
                       >
-                        Editar
+                        Edit
                       </button>
                       <button
                         onClick={() => deleteItem(item.id)}
@@ -688,7 +687,7 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
                           fontFamily: FONT_SANS,
                         }}
                       >
-                        Eliminar
+                        Delete
                       </button>
                     </div>
                   </div>

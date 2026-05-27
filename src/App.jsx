@@ -168,7 +168,7 @@ function LoginScreen({ onLogin }) {
                 transition: "all 0.15s",
               }}
             >
-              {role === "student" ? "👨‍🎓 Estudiante" : "👨‍🏫 Maestro"}
+              {role === "student" ? "👨‍🎓 Student" : "👨‍🏫 Teacher"}
             </button>
           ))}
         </div>
@@ -180,7 +180,7 @@ function LoginScreen({ onLogin }) {
             fontFamily: FONT_SANS,
           }}
         >
-          ← Selector solo visible en modo demo
+          ← Selector only visible in demo mode
         </p>
 
         {/* Login button */}
@@ -222,7 +222,7 @@ function LoginScreen({ onLogin }) {
                   animation: "spin 0.8s linear infinite",
                 }}
               />
-              Conectando...
+              Connecting...
             </>
           ) : (
             <>
@@ -233,7 +233,7 @@ function LoginScreen({ onLogin }) {
                 <rect x="1" y="11"  width="9" height="9" fill="#00a4ef" />
                 <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
               </svg>
-              Entrar con Microsoft DE
+              Sign in with Microsoft DE
             </>
           )}
         </button>
@@ -246,7 +246,7 @@ function LoginScreen({ onLogin }) {
             fontFamily: FONT_SANS,
           }}
         >
-          Usa tu cuenta @de.pr o @miescuela.pr
+          Use your @de.pr or @miescuela.pr account
         </p>
       </div>
 

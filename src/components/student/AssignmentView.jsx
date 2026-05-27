@@ -57,7 +57,7 @@ export default function AssignmentView({ assignment }) {
             marginBottom: 7,
           }}
         >
-          Tarea no disponible
+          Assignment Unavailable
         </h2>
         <p
           style={{
@@ -67,7 +67,7 @@ export default function AssignmentView({ assignment }) {
             lineHeight: 1.6,
           }}
         >
-          Solo accesible de{" "}
+          Only accessible from{" "}
           <strong style={{ color: "#60a5fa" }}>7:30am–2:30pm</strong>
         </p>
       </div>
@@ -94,7 +94,7 @@ export default function AssignmentView({ assignment }) {
             marginBottom: 7,
           }}
         >
-          ¡Tarea entregada!
+          Assignment Submitted!
         </h2>
         <p
           style={{
@@ -104,7 +104,7 @@ export default function AssignmentView({ assignment }) {
             marginBottom: 24,
           }}
         >
-          Tus respuestas fueron guardadas en SharePoint.
+          Your answers were saved to SharePoint.
         </p>
         <div
           style={{
@@ -126,7 +126,7 @@ export default function AssignmentView({ assignment }) {
               fontFamily: FONT_SANS,
             }}
           >
-            {new Date().toLocaleTimeString("es-PR")}
+            {new Date().toLocaleTimeString("en-US")}
           </div>
         </div>
       </div>
@@ -161,7 +161,7 @@ export default function AssignmentView({ assignment }) {
             whiteSpace: "nowrap",
           }}
         >
-          ⚠️ Copiar y pegar no está permitido en esta tarea.
+          ⚠️ Copy and paste is not allowed in this assignment.
         </div>
       )}
 
@@ -237,7 +237,7 @@ export default function AssignmentView({ assignment }) {
             {questionCompletionFlags[index] && (
               <span style={{ color: "#34d399" }}>✓</span>
             )}
-            P{index + 1}
+            Q{index + 1}
           </button>
         ))}
       </div>
@@ -274,7 +274,7 @@ export default function AssignmentView({ assignment }) {
             }}
           >
             {currentQuestion.type === "multiple_choice"
-              ? "SELECCIÓN MÚLTIPLE"
+              ? "MULTIPLE CHOICE"
               : currentQuestion.type === "short_answer"
               ? "SHORT ANSWER"
               : "JOURNAL"}
@@ -399,7 +399,7 @@ export default function AssignmentView({ assignment }) {
                   fontFamily: FONT_SANS,
                 }}
               >
-                {wordCount(answers.q2)} / 30 palabras mínimas
+                {wordCount(answers.q2)} / 30 minimum words
               </div>
             </>
           )}
@@ -445,7 +445,7 @@ export default function AssignmentView({ assignment }) {
                   fontFamily: FONT_SANS,
                 }}
               >
-                {wordCount(answers.q3)} / 50 palabras mínimas
+                {wordCount(answers.q3)} / 50 minimum words
               </div>
             </>
           )}
@@ -480,7 +480,7 @@ export default function AssignmentView({ assignment }) {
             gap: 6,
           }}
         >
-          🤖 {isTutorOpen ? "Cerrar Tutor" : "Pedir Ayuda"}
+          🤖 {isTutorOpen ? "Close Tutor" : "Ask for Help"}
         </button>
 
         <div style={{ flex: 1 }} />
@@ -499,7 +499,7 @@ export default function AssignmentView({ assignment }) {
               fontFamily: FONT_SANS,
             }}
           >
-            ← Anterior
+            ← Previous
           </button>
         )}
 
@@ -518,7 +518,7 @@ export default function AssignmentView({ assignment }) {
               fontFamily: FONT_SANS,
             }}
           >
-            Siguiente →
+            Next →
           </button>
         ) : (
           <button
@@ -542,8 +542,8 @@ export default function AssignmentView({ assignment }) {
             }}
           >
             {isAllComplete
-              ? "Entregar tarea ✓"
-              : `Faltan ${[!isQ1Complete, !isQ2Complete, !isQ3Complete].filter(Boolean).length} pregunta(s)`}
+              ? "Submit Assignment ✓"
+              : `${[!isQ1Complete, !isQ2Complete, !isQ3Complete].filter(Boolean).length} question(s) remaining`}
           </button>
         )}
       </div>
@@ -562,9 +562,9 @@ export default function AssignmentView({ assignment }) {
             fontFamily: FONT_SANS,
           }}
         >
-          {!isQ1Complete && "· Selecciona P1  "}
-          {!isQ2Complete && "· Mínimo 30 palabras en P2  "}
-          {!isQ3Complete && "· Mínimo 50 palabras en P3"}
+          {!isQ1Complete && "· Select Q1  "}
+          {!isQ2Complete && "· Minimum 30 words for Q2  "}
+          {!isQ3Complete && "· Minimum 50 words for Q3"}
         </div>
       )}
 

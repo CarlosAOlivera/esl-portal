@@ -22,10 +22,10 @@ import Responses from "./Responses";
 
 function TeacherHeader({ user, currentView, setView, onLogout }) {
   const tabs = [
-    { id: "dashboard",   label: "Dashboard",    icon: "📊" },
-    { id: "flipped",     label: "Material",     icon: "🎬" },
-    { id: "assignments", label: "Asignaciones", icon: "📋" },
-    { id: "responses",   label: "Respuestas",   icon: "👁" },
+    { id: "dashboard",   label: "Dashboard",   icon: "📊" },
+    { id: "flipped",     label: "Material",    icon: "🎬" },
+    { id: "assignments", label: "Assignments", icon: "📋" },
+    { id: "responses",   label: "Responses",   icon: "👁" },
   ];
 
   return (
@@ -68,7 +68,7 @@ function TeacherHeader({ user, currentView, setView, onLogout }) {
             fontFamily: FONT_SANS,
           }}
         >
-          MAESTRO
+          TEACHER
         </span>
       </div>
 
@@ -148,7 +148,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
       )
     );
 
-  const columnHeaders = ["Estudiante", "Estado", "Tutor", "Msgs", "Pegar", ""];
+  const columnHeaders = ["Student", "Status", "Tutor", "Msgs", "Paste", ""];
 
   return (
     <div style={{ maxWidth: 920, margin: "0 auto", padding: "28px 20px" }}>
@@ -164,7 +164,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
             fontFamily: FONT_SANS,
           }}
         >
-          {new Date().toLocaleDateString("es-PR", {
+          {new Date().toLocaleDateString("en-US", {
             weekday: "long",
             month: "long",
             day: "numeric",
@@ -184,8 +184,8 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
           }}
         >
           {assignments.find((assignment) => assignment.status === "published")
-            ?.title || "Sin asignación activa"}{" "}
-          · activa
+            ?.title || "No active assignment"}{" "}
+          · active
         </p>
       </div>
 
@@ -213,7 +213,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
                 fontFamily: FONT_SANS,
               }}
             >
-              Próximo material programado
+              Next scheduled material
             </div>
             <div
               style={{
@@ -235,30 +235,30 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
       >
         <Stat
           icon="✅"
-          label="Entregaron"
+          label="Submitted"
           value={`${submittedCount}/${roster.length}`}
           sub={`${Math.round((submittedCount / roster.length) * 100)}%`}
           color="#34d399"
         />
         <Stat
           icon="👁"
-          label="Revisadas"
+          label="Reviewed"
           value={reviewedCount}
-          sub="por ti"
+          sub="by you"
           color="#60a5fa"
         />
         <Stat
           icon="🤖"
-          label="Usaron Tutor"
+          label="Used Tutor"
           value={studentsWhoUsedTutor.length}
-          sub={`Prom. ${averageTutorMinutes} min`}
+          sub={`Avg. ${averageTutorMinutes} min`}
           color="#a78bfa"
         />
         <Stat
           icon="⚠️"
-          label="Alertas"
+          label="Alerts"
           value={flaggedCount}
-          sub="pegar >2x"
+          sub="paste >2x"
           color={flaggedCount > 0 ? "#f87171" : "rgba(148,163,184,0.4)"}
         />
       </div>
@@ -280,7 +280,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
               fontFamily: FONT_SANS,
             }}
           >
-            Progreso del grupo
+            Class Progress
           </span>
           <span
             style={{
@@ -289,7 +289,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
               fontFamily: FONT_SANS,
             }}
           >
-            {submittedCount} de {roster.length}
+            {submittedCount} of {roster.length}
           </span>
         </div>
         <div
@@ -330,7 +330,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
               fontFamily: FONT_SANS,
             }}
           >
-            Resumen por estudiante
+            Student Summary
           </span>
           <span
             style={{
@@ -442,7 +442,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
                     fontFamily: FONT_SANS,
                   }}
                 >
-                  {student.reviewed ? "✓ Revisado" : "Entregado"}
+                  {student.reviewed ? "✓ Reviewed" : "Submitted"}
                 </span>
               ) : (
                 <span
@@ -456,7 +456,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
                     fontFamily: FONT_SANS,
                   }}
                 >
-                  Pendiente
+                  Pending
                 </span>
               )}
             </div>
@@ -546,7 +546,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
                     fontFamily: FONT_SANS,
                   }}
                 >
-                  {student.reviewed ? "✓ Revisado" : "Marcar"}
+                  {student.reviewed ? "✓ Reviewed" : "Mark as reviewed"}
                 </button>
               )}
             </div>

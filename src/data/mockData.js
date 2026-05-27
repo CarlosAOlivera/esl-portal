@@ -20,29 +20,29 @@ export const daysFrom = (offset) => {
   return futureDate.toISOString().slice(0, 10);
 };
 
-// Formats an ISO date string as a short localized label (e.g. "lun., 2 jun.")
+// Formats an ISO date string as a short localized label (e.g. "Mon, Jun 2")
 export const fmtDate = (isoDate) => {
   if (!isoDate) return "—";
   const [year, month, day] = isoDate.split("-");
-  return new Date(year, month - 1, day).toLocaleDateString("es-PR", {
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
 };
 
-// Returns a human-readable relative description ("hoy", "mañana", "en 3 días", etc.)
+// Returns a human-readable relative description ("today", "tomorrow", "in 3 days", etc.)
 export const daysUntil = (isoDate) => {
   if (!isoDate) return null;
   const dayDifference = Math.round(
     (new Date(isoDate) - new Date(todayStr())) / 86400000
   );
-  if (dayDifference === 0)  return "hoy";
-  if (dayDifference === 1)  return "mañana";
-  if (dayDifference === -1) return "ayer";
+  if (dayDifference === 0)  return "today";
+  if (dayDifference === 1)  return "tomorrow";
+  if (dayDifference === -1) return "yesterday";
   return dayDifference > 1
-    ? `en ${dayDifference} días`
-    : `hace ${Math.abs(dayDifference)} días`;
+    ? `in ${dayDifference} days`
+    : `${Math.abs(dayDifference)} days ago`;
 };
 
 // Returns the display status of a flipped item based on its publish date
@@ -67,28 +67,28 @@ export const CONTENT_TYPES = {
     icon: "🎬",
     label: "Video",
     color: "#f59e0b",
-    urlLabel: "URL del video (YouTube, Teams)",
+    urlLabel: "Video URL (YouTube, Teams)",
     ph: "https://youtube.com/watch?v=...",
   },
   podcast: {
     icon: "🎙",
     label: "Podcast",
     color: "#22d3ee",
-    urlLabel: "URL del audio (NotebookLM)",
+    urlLabel: "Audio URL (NotebookLM)",
     ph: "https://notebooklm.google.com/...",
   },
   pdf: {
     icon: "📄",
     label: "PDF",
     color: "#f87171",
-    urlLabel: "URL del PDF (OneDrive/SharePoint)",
+    urlLabel: "PDF URL (OneDrive/SharePoint)",
     ph: "https://...",
   },
   website: {
     icon: "🌐",
     label: "Website",
     color: "#34d399",
-    urlLabel: "URL del sitio web",
+    urlLabel: "Website URL",
     ph: "https://...",
   },
 };
@@ -100,17 +100,17 @@ export const STATUS_CONFIG = {
   published: {
     bg: "rgba(52,211,153,0.13)",
     color: "#34d399",
-    label: "● Publicado",
+    label: "● Published",
   },
   scheduled: {
     bg: "rgba(99,102,241,0.13)",
     color: "#a78bfa",
-    label: "◷ Programado",
+    label: "◷ Scheduled",
   },
   draft: {
     bg: "rgba(148,163,184,0.1)",
     color: "rgba(148,163,184,0.5)",
-    label: "○ Borrador",
+    label: "○ Draft",
   },
 };
 
@@ -304,16 +304,16 @@ export const INITIAL_ROSTER = [
 
 export const MOCK_ANSWERS = [
   {
-    question: "P1 · Selección múltiple",
+    question: "Q1 · Multiple Choice",
     response: "Ethos — establishing credibility",
   },
   {
-    question: "P2 · Short answer",
+    question: "Q2 · Short Answer",
     response:
       "Ethos tries to make the audience believe what the speaker says based on their credentials. In the video, the speaker mentioned their background to gain trust. Pathos was used when they described emotional stories about families to connect with listeners.",
   },
   {
-    question: "P3 · Journal",
+    question: "Q3 · Journal",
     response:
       "I remember when my teacher tried to convince our class to read more books. She used pathos by telling us stories about students who struggled later in life. It was effective because it made us feel worried about our future and motivated to change our habits.",
   },

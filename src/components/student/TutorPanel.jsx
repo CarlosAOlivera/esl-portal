@@ -240,7 +240,7 @@ export default function TutorPanel({ activeQuestionIndex, questions, onClose }) 
               fontFamily: FONT_SANS,
             }}
           >
-            {secondsRemaining <= 0 ? "⏱ Límite de 40 minutos" : "💬 Límite de mensajes"}
+            {secondsRemaining <= 0 ? "⏱ 40-minute limit reached" : "💬 Message limit reached"}
           </div>
         ) : (
           <div style={{ display: "flex", gap: 7 }}>
@@ -253,7 +253,7 @@ export default function TutorPanel({ activeQuestionIndex, questions, onClose }) 
                   sendMessage();
                 }
               }}
-              placeholder="Escribe tu pregunta..."
+              placeholder="Type your question..."
               rows={2}
               style={{
                 flex: 1,

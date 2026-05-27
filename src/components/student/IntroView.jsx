@@ -164,7 +164,7 @@ export default function IntroView({ onContinue, concepts }) {
                       fontFamily: FONT_SANS,
                     }}
                   >
-                    Ejemplo
+                    Example
                   </div>
                   <p
                     style={{
@@ -227,7 +227,7 @@ export default function IntroView({ onContinue, concepts }) {
           boxShadow: "0 4px 20px rgba(59,130,246,0.35)",
         }}
       >
-        Ver material de hoy →
+        View today's material →
       </button>
     </div>
   );

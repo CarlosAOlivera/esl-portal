@@ -24,9 +24,9 @@ import AssignmentView from "./AssignmentView";
 
 function StudentHeader({ user, currentView, setView, onLogout }) {
   const tabs = [
-    { id: "intro",      label: "Conceptos", icon: "💡" },
-    { id: "home",       label: "Material",  icon: "🏠" },
-    { id: "assignment", label: "Tarea",     icon: "✏️" },
+    { id: "intro",      label: "Concepts",    icon: "💡" },
+    { id: "home",       label: "Material",    icon: "🏠" },
+    { id: "assignment", label: "Assignment",  icon: "✏️" },
   ];
 
   return (
@@ -150,7 +150,7 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
                 marginLeft: "auto",
               }}
             >
-              ✓ Visto
+              ✓ Seen
             </span>
           )}
         </div>
@@ -205,8 +205,8 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
               }}
             >
               {viewedItems[flippedItem.id]
-                ? "✓ Marcado como visto"
-                : "Marcar como visto"}
+                ? "✓ Marked as seen"
+                : "Mark as seen"}
             </button>
           )}
         </div>
@@ -229,7 +229,7 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
               fontFamily: FONT_SANS,
             }}
           >
-            Material de hoy
+            Today's Material
           </div>
           {todayItems.map((item) => (
             <FlippedItemCard key={item.id} flippedItem={item} />
@@ -279,7 +279,7 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
                 fontFamily: FONT_SANS,
               }}
             >
-              TAREA DE HOY
+              TODAY'S ASSIGNMENT
             </div>
             <div
               style={{
@@ -298,7 +298,7 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
                 fontFamily: FONT_SANS,
               }}
             >
-              {assignment.unit} · {assignment.questions.length} preguntas
+              {assignment.unit} · {assignment.questions.length} questions
             </div>
           </div>
           <span style={{ color: "rgba(148,163,184,0.35)", fontSize: 18 }}>→</span>
@@ -327,7 +327,7 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
               fontFamily: FONT_SANS,
             }}
           >
-            Tarea no disponible
+            Assignment Unavailable
           </div>
           <div
             style={{
@@ -336,7 +336,7 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
               fontFamily: FONT_SANS,
             }}
           >
-            Solo accesible de{" "}
+            Only accessible from{" "}
             <strong style={{ color: "#60a5fa" }}>7:30am – 2:30pm</strong>
           </div>
         </div>
@@ -355,7 +355,7 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
               fontFamily: FONT_SANS,
             }}
           >
-            Material anterior — para estudiar
+            Previous Material — for review
           </div>
           {pastItems.map((item) => (
             <FlippedItemCard key={item.id} flippedItem={item} />
@@ -418,10 +418,10 @@ export default function StudentPortal({ user, onLogout, flippedItems, assignment
                 marginBottom: 8,
               }}
             >
-              Sin tarea activa
+              No active assignment
             </h2>
             <p style={{ color: "rgba(148,163,184,0.6)", fontFamily: FONT_SANS }}>
-              El maestro aún no ha publicado una tarea para hoy.
+              The teacher hasn't published an assignment yet.
             </p>
           </div>
         )}

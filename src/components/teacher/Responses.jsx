@@ -29,7 +29,7 @@ export default function Responses({ roster, setRoster }) {
             fontFamily: FONT_SERIF,
           }}
         >
-          Respuestas del grupo
+          Class Responses
         </h2>
         <p
           style={{
@@ -39,8 +39,8 @@ export default function Responses({ roster, setRoster }) {
             fontFamily: FONT_SANS,
           }}
         >
-          {submittedStudents.length} entregaron ·{" "}
-          {roster.filter((student) => student.reviewed).length} revisadas
+          {submittedStudents.length} submitted ·{" "}
+          {roster.filter((student) => student.reviewed).length} reviewed
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default function Responses({ roster, setRoster }) {
                       }}
                     >
                       {student.pasteAttempts > 2 ? "⚠️ " : ""}
-                      {student.pasteAttempts} intento(s) de pegar
+                      {student.pasteAttempts} paste attempt(s)
                     </span>
                   )}
                   {student.pasteAttempts === 0 && student.tutorMinutes === 0 && (
@@ -143,7 +143,7 @@ export default function Responses({ roster, setRoster }) {
                         fontFamily: FONT_SANS,
                       }}
                     >
-                      Sin actividad del tutor
+                      No tutor activity
                     </span>
                   )}
                 </div>
@@ -170,7 +170,7 @@ export default function Responses({ roster, setRoster }) {
                   flexShrink: 0,
                 }}
               >
-                {student.reviewed ? "✓ Revisado" : "Marcar revisado"}
+                {student.reviewed ? "✓ Reviewed" : "Mark as reviewed"}
               </button>
             </div>
 
