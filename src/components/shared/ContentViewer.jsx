@@ -34,7 +34,7 @@ export default function ContentViewer({ item }) {
             margin: 0,
           }}
         >
-          Contenido no disponible aún
+          Content not available yet
         </p>
       </div>
     );
@@ -116,7 +116,7 @@ export default function ContentViewer({ item }) {
         </div>
         <audio controls style={{ width: "100%", accentColor: "#22d3ee" }}>
           <source src={item.url} />
-          Tu navegador no soporta audio.
+          Your browser does not support audio.
         </audio>
         <p
           style={{
@@ -126,7 +126,7 @@ export default function ContentViewer({ item }) {
             fontFamily: FONT_SANS,
           }}
         >
-          💡 Usa audífonos y toma notas mientras escuchas.
+          💡 Use headphones and take notes as you listen.
         </p>
       </div>
     );
@@ -160,7 +160,7 @@ export default function ContentViewer({ item }) {
               fontFamily: FONT_SANS,
             }}
           >
-            Lectura en PDF
+            PDF Reading
           </span>
           <a
             href={item.url}
@@ -174,7 +174,7 @@ export default function ContentViewer({ item }) {
               textDecoration: "none",
             }}
           >
-            Abrir en tab nueva ↗
+            Open in new tab ↗
           </a>
         </div>
         <iframe
@@ -237,7 +237,7 @@ export default function ContentViewer({ item }) {
             boxShadow: "0 4px 14px rgba(52,211,153,0.3)",
           }}
         >
-          Abrir sitio web ↗
+          Open website ↗
         </a>
         <p
           style={{
