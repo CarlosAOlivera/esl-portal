@@ -1,0 +1,31 @@
+/* PlanningStudio layout — responsive two-column form + preview */
+
+.planning-studio-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* Stack form above preview on narrow viewports */
+@media (max-width: 768px) {
+  .planning-studio-layout {
+    flex-direction: column;
+  }
+
+  .planning-studio-form {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+}
+
+/* Session history: flow into a responsive grid of small cards */
+.session-history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+/* Spinner keyframes — used by the inline Spinner component in PlanningStudio.jsx */
+@keyframes ps-spin {
+  to { transform: rotate(360deg); }
+}

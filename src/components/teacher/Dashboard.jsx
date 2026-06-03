@@ -17,6 +17,7 @@ import Stat from "../shared/Stat";
 import FlippedMgr from "./FlippedMgr";
 import AssignmentsMgr from "./AssignmentsMgr";
 import Responses from "./Responses";
+import PlanningStudio from "../PlanningStudio/PlanningStudio";
 
 // ── Teacher navigation header ─────────────────────────────────────────────────
 
@@ -26,6 +27,7 @@ function TeacherHeader({ user, currentView, setView, onLogout }) {
     { id: "flipped",     label: "Material",    icon: "🎬" },
     { id: "assignments", label: "Assignments", icon: "📋" },
     { id: "responses",   label: "Responses",   icon: "👁" },
+    { id: "planning",    label: "Planning",    icon: "📝" },
   ];
 
   return (
@@ -605,6 +607,9 @@ export default function TeacherPortal({
         )}
         {currentView === "responses" && (
           <Responses roster={roster} setRoster={setRoster} />
+        )}
+        {currentView === "planning" && (
+          <PlanningStudio user={user} />
         )}
       </main>
     </div>

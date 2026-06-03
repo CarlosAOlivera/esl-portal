@@ -11,8 +11,15 @@ import { useSchoolHours } from "../../hooks/useSchoolHours";
 import TutorPanel from "./TutorPanel";
 
 export default function AssignmentView({ assignment }) {
-  // Per-question answers: q1 = selected option index, q2/q3 = written text
-  const [answers, setAnswers] = useState({ q1: null, q2: "", q3: "" });
+  // Answers keyed by question ID; MC questions start null, text questions start ""
+  const [answers, setAnswers] = useState(() =>
+    Object.fromEntries(
+      assignment.questions.map((q) => [
+        q.id,
+        q.type === "multiple_choice" ? null : "",
+      ])
+    )
+  );
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const [isTutorOpen, setIsTutorOpen]     = useState(false);
   const [isSubmitted, setIsSubmitted]     = useState(false);
@@ -27,13 +34,13 @@ export default function AssignmentView({ assignment }) {
     setTimeout(() => setShowPasteWarning(false), 3000);
   };
 
-  const isQ1Complete = answers.q1 !== null;
-  const isQ2Complete = wordCount(answers.q2) >= 30;
-  const isQ3Complete = wordCount(answers.q3) >= 50;
-  const isAllComplete = isQ1Complete && isQ2Complete && isQ3Complete;
-
-  // Parallel array mirrors question order for the progress tabs
-  const questionCompletionFlags = [isQ1Complete, isQ2Complete, isQ3Complete];
+  // Completion is derived from each question's own type and minWords value
+  const questionCompletionFlags = assignment.questions.map((q) => {
+    const answer = answers[q.id];
+    if (q.type === "multiple_choice") return answer !== null;
+    return wordCount(answer || "") >= (q.minWords || 0);
+  });
+  const isAllComplete = questionCompletionFlags.every(Boolean);
 
   const currentQuestion = assignment.questions[activeQuestionIndex];
 
@@ -301,21 +308,21 @@ export default function AssignmentView({ assignment }) {
                 <button
                   key={optionIndex}
                   onClick={() =>
-                    setAnswers((previous) => ({ ...previous, q1: optionIndex }))
+                    setAnswers((previous) => ({ ...previous, [currentQuestion.id]: optionIndex }))
                   }
                   style={{
                     padding: "10px 13px",
                     borderRadius: 9,
                     border:
-                      answers.q1 === optionIndex
+                      answers[currentQuestion.id] === optionIndex
                         ? "1px solid rgba(59,130,246,0.5)"
                         : "1px solid rgba(255,255,255,0.07)",
                     background:
-                      answers.q1 === optionIndex
+                      answers[currentQuestion.id] === optionIndex
                         ? "rgba(59,130,246,0.14)"
                         : "rgba(255,255,255,0.02)",
                     color:
-                      answers.q1 === optionIndex
+                      answers[currentQuestion.id] === optionIndex
                         ? "#60a5fa"
                         : "rgba(203,213,225,0.8)",
                     textAlign: "left",
@@ -333,11 +340,11 @@ export default function AssignmentView({ assignment }) {
                       height: 22,
                       borderRadius: "50%",
                       border:
-                        answers.q1 === optionIndex
+                        answers[currentQuestion.id] === optionIndex
                           ? "none"
                           : "1px solid rgba(255,255,255,0.18)",
                       background:
-                        answers.q1 === optionIndex
+                        answers[currentQuestion.id] === optionIndex
                           ? "linear-gradient(135deg,#3b82f6,#6366f1)"
                           : "transparent",
                       display: "flex",
@@ -348,7 +355,7 @@ export default function AssignmentView({ assignment }) {
                       flexShrink: 0,
                     }}
                   >
-                    {answers.q1 === optionIndex
+                    {answers[currentQuestion.id] === optionIndex
                       ? "✓"
                       : String.fromCharCode(65 + optionIndex)}
                   </span>
@@ -362,11 +369,11 @@ export default function AssignmentView({ assignment }) {
           {currentQuestion.type === "short_answer" && (
             <>
               <textarea
-                value={answers.q2}
+                value={answers[currentQuestion.id] || ""}
                 onChange={(event) =>
                   setAnswers((previous) => ({
                     ...previous,
-                    q2: event.target.value,
+                    [currentQuestion.id]: event.target.value,
                   }))
                 }
                 onPaste={handlePasteAttempt}
@@ -390,7 +397,7 @@ export default function AssignmentView({ assignment }) {
               />
               <div
                 style={{
-                  color: isQ2Complete
+                  color: questionCompletionFlags[activeQuestionIndex]
                     ? "#34d399"
                     : "rgba(148,163,184,0.45)",
                   fontSize: 11,
@@ -399,7 +406,7 @@ export default function AssignmentView({ assignment }) {
                   fontFamily: FONT_SANS,
                 }}
               >
-                {wordCount(answers.q2)} / 30 minimum words
+                {wordCount(answers[currentQuestion.id] || "")} / {currentQuestion.minWords || 0} minimum words
               </div>
             </>
           )}
@@ -408,11 +415,11 @@ export default function AssignmentView({ assignment }) {
           {currentQuestion.type === "journal" && (
             <>
               <textarea
-                value={answers.q3}
+                value={answers[currentQuestion.id] || ""}
                 onChange={(event) =>
                   setAnswers((previous) => ({
                     ...previous,
-                    q3: event.target.value,
+                    [currentQuestion.id]: event.target.value,
                   }))
                 }
                 onPaste={handlePasteAttempt}
@@ -436,7 +443,7 @@ export default function AssignmentView({ assignment }) {
               />
               <div
                 style={{
-                  color: isQ3Complete
+                  color: questionCompletionFlags[activeQuestionIndex]
                     ? "#34d399"
                     : "rgba(148,163,184,0.45)",
                   fontSize: 11,
@@ -445,7 +452,7 @@ export default function AssignmentView({ assignment }) {
                   fontFamily: FONT_SANS,
                 }}
               >
-                {wordCount(answers.q3)} / 50 minimum words
+                {wordCount(answers[currentQuestion.id] || "")} / {currentQuestion.minWords || 0} minimum words
               </div>
             </>
           )}
@@ -503,7 +510,7 @@ export default function AssignmentView({ assignment }) {
           </button>
         )}
 
-        {activeQuestionIndex < 2 ? (
+        {activeQuestionIndex < assignment.questions.length - 1 ? (
           <button
             onClick={() => setActiveQuestionIndex(activeQuestionIndex + 1)}
             style={{
@@ -543,13 +550,13 @@ export default function AssignmentView({ assignment }) {
           >
             {isAllComplete
               ? "Submit Assignment ✓"
-              : `${[!isQ1Complete, !isQ2Complete, !isQ3Complete].filter(Boolean).length} question(s) remaining`}
+              : `${questionCompletionFlags.filter((done) => !done).length} question(s) remaining`}
           </button>
         )}
       </div>
 
       {/* Checklist of remaining requirements (shown on last question) */}
-      {!isAllComplete && activeQuestionIndex === 2 && (
+      {!isAllComplete && activeQuestionIndex === assignment.questions.length - 1 && (
         <div
           style={{
             marginTop: 9,
@@ -562,9 +569,15 @@ export default function AssignmentView({ assignment }) {
             fontFamily: FONT_SANS,
           }}
         >
-          {!isQ1Complete && "· Select Q1  "}
-          {!isQ2Complete && "· Minimum 30 words for Q2  "}
-          {!isQ3Complete && "· Minimum 50 words for Q3"}
+          {assignment.questions.map((q, i) =>
+            !questionCompletionFlags[i] ? (
+              <span key={q.id}>
+                {q.type === "multiple_choice"
+                  ? `· Select an answer for Q${i + 1}  `
+                  : `· Minimum ${q.minWords || 0} words for Q${i + 1}  `}
+              </span>
+            ) : null
+          )}
         </div>
       )}
 
