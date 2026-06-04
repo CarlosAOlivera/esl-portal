@@ -22,9 +22,9 @@ This is a **real production app** that will be used by students starting August 
 | Frontend | React 18 + Vite |
 | Styling | CSS Modules (currently), migrating to Tailwind |
 | AI Tutor | Anthropic Claude API via Express proxy (`server.js`) |
-| Auth (target) | Microsoft Entra ID (MSAL) |
-| Data (target) | SharePoint via Microsoft Graph API |
-| Deploy (target) | Azure Static Web Apps |
+| Auth | Supabase Auth (email + password) |
+| Data | Supabase (PostgreSQL) — tables: profiles, assignments, materials, student_responses |
+| Deploy (target) | Vercel |
 | Repo | github.com/CarlosAOlivera/esl-portal |
 
 ---
@@ -35,18 +35,32 @@ This is a **real production app** that will be used by students starting August 
 esl-portal/
 ├── CLAUDE.md                  ← this file
 ├── public/
-├── server.js                  ← Express proxy for Anthropic API (handles CORS)
+├── server.js                  ← Express proxy for Anthropic API (dev only)
+├── api/
+│   └── anthropic.js           ← Vercel serverless function (to be created)
+├── supabase/
+│   └── migrations/
+│       └── 20260603000000_initial_schema.sql
 ├── src/
 │   ├── assets/
-│   ├── components/            ← all React components live here
-│   ├── data/                  ← seed data (assignments, materials, questions)
-│   ├── hooks/                 ← custom React hooks
-│   ├── styles/                ← global styles
-│   ├── App.jsx                ← main router/layout
+│   ├── auth/
+│   │   └── msalConfig.js      ← unused, can be deleted
+│   ├── components/
+│   │   ├── LoginScreen.jsx    ← Supabase email/password login + teacher PIN fallback
+│   │   ├── PlanningStudio/    ← AI lesson planning tools (teacher-only)
+│   │   ├── shared/
+│   │   ├── student/
+│   │   └── teacher/
+│   ├── data/                  ← seed data (still used for assignments/materials until Priority 4 done)
+│   ├── hooks/
+│   ├── lib/
+│   │   └── supabaseClient.js  ← single Supabase client export
+│   ├── styles/
+│   ├── App.jsx                ← Supabase session management + role routing
 │   ├── App.css
 │   ├── index.css
 │   └── main.jsx
-├── .env                       ← VITE_ANTHROPIC_API_KEY (never commit)
+├── .env                       ← VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_ANTHROPIC_API_KEY (never commit)
 ├── package.json
 └── vite.config.js
 ```
@@ -57,7 +71,7 @@ esl-portal/
 
 All of the following are built and working on localhost:
 
-- Student login (demo mode)
+- Student login (Supabase email/password)
 - Concepts introduction screen
 - Flipped material viewer (video, audio, reading, web embed)
 - Day's assignment with 3 question types (multiple choice, short answer, reflection)
@@ -69,124 +83,139 @@ All of the following are built and working on localhost:
 - Assignment builder
 - Student responses viewer
 - Express proxy server for Anthropic API
+- Planning Studio (AI lesson plan / rubric / test spec generator)
+- Supabase auth with role detection (teacher vs student by email)
+- Supabase database schema (profiles, assignments, materials, student_responses)
 
 ---
 
 ## Pending Work — Prioritized
 
-### 🔴 PRIORITY 1 — Integrate Planning Studio
+### ✅ PRIORITY 3 — Authentication (COMPLETE)
 
-The Planning Studio exists as a standalone React artifact but has NOT been integrated into the app. It must be added as a new section in the Teacher Dashboard.
+Supabase email/password auth is live. Key details:
+- `src/lib/supabaseClient.js` — single client, reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+- `src/components/LoginScreen.jsx` — email + password form; teacher fallback PIN `2026` for `de142118@miescuela.pr`
+- `src/App.jsx` — `getSession()` + `onAuthStateChange()` for session persistence; `authLoading` guard prevents login flash on refresh
+- Role detection: `de142118@miescuela.pr` → teacher, all others → student
+- Auto-profile creation on signup via `handle_new_user` trigger in Supabase
 
-**What Planning Studio does:**
-- Generates lesson plans, rubrics, test specs, exit tickets, and scaffold/graphic organizers
-- Uses Claude API to generate content based on: selected unit (from DE Pacing Calendar), skill focus (Reading/Writing/Listening/Speaking/Language), proficiency level, and free-form context
-- Renders a PDF-printable output the teacher can share with the school principal
-- Has session history (last 8 generated documents)
-
-**Integration tasks:**
-1. Create `src/components/PlanningStudio/` folder with:
-   - `PlanningStudio.jsx` — main component
-   - `PlanningStudio.css` — styles
-   - `DocumentPreview.jsx` — rendered output with print/PDF button
-   - `SessionHistory.jsx` — sidebar with last 8 docs
-2. Add a "Planning" tab/route in `App.jsx` (teacher-only, not visible to students)
-3. Wire API calls through existing `server.js` proxy (same pattern as AI Tutor)
-4. PDF export: use `window.print()` with a print-specific CSS that hides the nav and shows only the document with school header and teacher name
-
-**Units to pre-load (DE Pacing Calendar Grade 12):**
-- Unit 1: Identity & Community (Weeks 1–6)
-- Unit 2: Technology & Society (Weeks 7–13)
-- Unit 3: Environmental Challenges (Weeks 14–20)
-- Unit 4: Career & Future Goals (Weeks 21–26)
-- Unit 5: Global Citizenship (Weeks 27–32)
-- Unit 6: The Long and Short of It — Literary Elements (Weeks 33–38)
-
-**Teacher info for PDF header:**
-- Teacher: Prof. Carlos Olivera
-- School: Escuela Superior Fernando Suria Chaves
-- Location: Barceloneta, Puerto Rico
-- Curriculum: PR Department of Education · Grade 12 ESL
+**Supabase project:** `https://dtvvecquuxmmkvkqauhe.supabase.co`
 
 ---
 
-### 🔴 PRIORITY 2 — Fix Assignment Submit Bug
+### 🔴 PRIORITY 4 — Supabase Data Persistence
 
-The "Submit" (Entregar) button was not activating correctly. Investigate and fix.
+Replace hardcoded seed data with real Supabase reads/writes. The database schema already exists (migration applied). Connect the app to it.
 
-Likely location: `src/components/` — look for the assignment or student view component.
+**What needs to be wired up:**
 
-**Expected behavior:** Button becomes active only when all required questions have a response. On click, locks the form, shows confirmation, and saves the response object.
+#### 1. Student Submit → save to `student_responses`
+
+In `src/components/student/AssignmentView.jsx`, the submit button currently just sets `isSubmitted = true` locally. It needs to call Supabase on submit:
+
+```js
+import { supabase } from "../../lib/supabaseClient";
+
+// Inside the submit handler (where setIsSubmitted(true) currently is):
+const { data: { session } } = await supabase.auth.getSession();
+const { error } = await supabase
+  .from("student_responses")
+  .upsert({
+    student_id: session.user.id,
+    assignment_id: assignment.id,
+    answers,          // the existing `answers` state object
+    submitted_at: new Date().toISOString(),
+  });
+if (!error) setIsSubmitted(true);
+```
+
+#### 2. Teacher Responses tab → read from `student_responses`
+
+In `src/components/teacher/Responses.jsx`, responses are currently read from the `roster` prop (local state). Replace with a Supabase query:
+
+```js
+import { supabase } from "../../lib/supabaseClient";
+
+// On mount, fetch all responses for the active assignment:
+const { data } = await supabase
+  .from("student_responses")
+  .select("*, profiles(full_name, avatar_initials)")
+  .order("submitted_at", { ascending: false });
+```
+
+**Do not yet migrate:** assignments and materials seed data — those can stay as local state until a later sprint. Only wire up the two student_responses flows above.
 
 ---
 
-### 🟡 PRIORITY 3 — Microsoft Entra ID Authentication
+### 🔴 PRIORITY 5 — Vercel Deployment
 
-Replace the current demo login with real Microsoft authentication using MSAL.
-
-**Context:**
-- Students and teachers authenticate with their Puerto Rico DE Microsoft accounts
-- Student emails follow the pattern: `[student]@miescuela.pr`
-- Teacher email: `de142118@miescuela.pr`
-- The DE uses Microsoft 365 — Teams, OneDrive, SharePoint are all active
+Deploy the app to Vercel so students and the teacher can access it from any device.
 
 **Tasks:**
-1. Install `@azure/msal-react` and `@azure/msal-browser`
-2. Create `src/auth/msalConfig.js` with Entra ID app registration config
-3. Wrap `main.jsx` with `MsalProvider`
-4. Replace demo login screen with Microsoft SSO button
-5. Extract user role from Microsoft account (teacher vs student) — use email domain or a group membership check
-6. Add fallback: if Entra auth fails, allow teacher login with `de142118@miescuela.pr` + PIN for demo/testing
 
-**Note:** The Azure app registration (client ID, tenant ID) will need to be created in the DE's Azure portal. Use environment variables: `VITE_AZURE_CLIENT_ID`, `VITE_AZURE_TENANT_ID`. Leave placeholders if the registration isn't ready yet — build the implementation so it works once the IDs are provided.
+1. **Connect GitHub repo to Vercel**
+   - Go to vercel.com → New Project → import `CarlosAOlivera/esl-portal`
+   - Framework preset: Vite
+   - Build command: `npm run build`
+   - Output directory: `dist`
 
----
-
-### 🟡 PRIORITY 4 — SharePoint Data Persistence
-
-Replace all hardcoded seed data with real SharePoint storage via Microsoft Graph API.
-
-**What needs to move to SharePoint:**
-- Student assignment responses → SharePoint List: `StudentResponses`
-- Assignments and questions → SharePoint List: `Assignments`
-- Flipped materials (links, descriptions) → SharePoint List: `FlippedMaterials`
-- AI Tutor usage logs → SharePoint List: `TutorLogs`
-
-**Tasks:**
-1. Create `src/services/graphService.js` — all Graph API calls go here
-2. Add Microsoft Graph scope to MSAL config: `Sites.ReadWrite.All` or `Lists.ReadWrite`
-3. Functions needed:
-   - `saveStudentResponse(assignmentId, studentId, responses)`
-   - `getAssignments()`
-   - `getMaterials(weekNumber)`
-   - `getResponsesByAssignment(assignmentId)`
-4. Teacher dashboard reads responses from SharePoint, not local state
-5. Keep local state as cache — always sync to SharePoint on save
-
----
-
-### 🟡 PRIORITY 5 — Azure Static Web Apps Deployment
-
-Deploy the app so students and the teacher can access it from any device.
-
-**Tasks:**
-1. Configure `staticwebapp.config.json` for SPA routing
-2. Set up GitHub Actions workflow for CI/CD (auto-deploy on push to `main`)
-3. Configure environment variables in Azure portal:
+2. **Add environment variables in Vercel dashboard:**
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
    - `VITE_ANTHROPIC_API_KEY`
-   - `VITE_AZURE_CLIENT_ID`
-   - `VITE_AZURE_TENANT_ID`
-4. The Express `server.js` proxy needs to become an Azure Function (or use Azure API Management) — it cannot run as a Node server in Static Web Apps
-5. Move the Anthropic proxy to `api/anthropic/index.js` as an Azure Function
+
+3. **Convert Express proxy to Vercel Serverless Function**
+
+   The current `server.js` Express proxy cannot run on Vercel. Create `api/anthropic.js` as a Vercel serverless function:
+
+   ```js
+   // api/anthropic.js
+   export default async function handler(req, res) {
+     if (req.method === "OPTIONS") {
+       res.setHeader("Access-Control-Allow-Origin", "*");
+       res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+       res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+       return res.status(204).end();
+     }
+     if (req.method !== "POST") return res.status(405).end();
+
+     const response = await fetch("https://api.anthropic.com/v1/messages", {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+         "x-api-key": process.env.VITE_ANTHROPIC_API_KEY,
+         "anthropic-version": "2023-06-01",
+       },
+       body: JSON.stringify(req.body),
+     });
+     const data = await response.json();
+     res.status(response.status).json(data);
+   }
+   ```
+
+4. **Update API call base URL** in the frontend
+
+   Currently the AI Tutor and Planning Studio call `http://localhost:3001/api/anthropic`. This needs to become `/api/anthropic` (relative URL) so it works on both localhost (via Vercel CLI or the proxy) and in production.
+
+   Files to update:
+   - `src/hooks/useTutor.js` — change the fetch URL
+   - `src/components/PlanningStudio/PlanningStudio.jsx` — change the fetch URL
+
+5. **Add `vercel.json`** for SPA routing:
+   ```json
+   {
+     "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+   }
+   ```
 
 ---
 
-### ⬜ PRIORITY 6 — UI Refinement
+### 🟡 PRIORITY 6 — UI Refinement
 
 - Tailwind CSS migration (replace current CSS files)
-- Full English UI (some labels still in Spanish — standardize)
 - Mobile optimization (students may use phones)
-- Full-width layout fix
+- Full English UI audit (standardize any remaining Spanish labels)
 
 ---
 
@@ -211,7 +240,7 @@ The app uses a dark navy theme. Maintain consistency:
 
 ## Important Rules
 
-1. **Never commit `.env`** — it contains the Anthropic API key
+1. **Never commit `.env`** — it contains Supabase and Anthropic API keys
 2. **Student role vs Teacher role** — always check role before rendering teacher-only components
 3. **AI Tutor must never give direct answers** — it guides, asks questions, gives hints only
 4. **School hours gating** — assignments and the tutor are only accessible 7:30 AM – 2:30 PM (Puerto Rico time, UTC-4)
@@ -227,7 +256,7 @@ The app uses a dark navy theme. Maintain consistency:
 # Terminal 1 — Frontend
 npm run dev
 
-# Terminal 2 — API Proxy
+# Terminal 2 — API Proxy (dev only; replaced by Vercel function in production)
 node server.js
 
 # App runs at: http://localhost:5173
@@ -240,27 +269,18 @@ node server.js
 
 When tackling large tasks, use sub-agents as follows:
 
-**For Planning Studio integration:**
+**For Priority 4 (Supabase data wiring):**
 ```
-Main agent → reads this file and existing App.jsx
-  └─ Sub-agent A: builds PlanningStudio.jsx component
-  └─ Sub-agent B: builds DocumentPreview.jsx + print CSS
-  └─ Sub-agent C: wires routing in App.jsx + server.js proxy endpoint
-```
-
-**For Microsoft integration:**
-```
-Main agent → reads this file and current auth/data flow
-  └─ Sub-agent A: MSAL setup (msalConfig, MsalProvider, login screen)
-  └─ Sub-agent B: graphService.js (all Graph API calls)
-  └─ Sub-agent C: updates Teacher Dashboard to read from SharePoint
+Main agent → reads this file and current AssignmentView + Responses components
+  └─ Sub-agent A: wires Submit button in AssignmentView.jsx to student_responses
+  └─ Sub-agent B: wires Responses.jsx to read from Supabase
 ```
 
-**For Azure deployment:**
+**For Priority 5 (Vercel deployment):**
 ```
-Main agent → reads this file and package.json
-  └─ Sub-agent A: converts server.js to Azure Function
-  └─ Sub-agent B: staticwebapp.config.json + GitHub Actions workflow
+Main agent → reads this file and current server.js + useTutor.js
+  └─ Sub-agent A: creates api/anthropic.js serverless function + vercel.json
+  └─ Sub-agent B: updates fetch URLs in useTutor.js and PlanningStudio.jsx
 ```
 
 ---

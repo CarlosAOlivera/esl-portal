@@ -23,9 +23,20 @@ export default function LoginScreen({ onLogin }) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    if (authError) setError(authError.message);
-    setIsLoading(false);
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) {
+        setError(
+          authError.message === "Failed to fetch"
+            ? "Cannot reach Supabase. Restart the dev server (`npm run dev`) and try again."
+            : authError.message
+        );
+      }
+    } catch {
+      setError("Cannot reach Supabase. Restart the dev server (`npm run dev`) and try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePinLogin = () => {
