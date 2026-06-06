@@ -95,10 +95,11 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch data once auth is ready
+  // Fetch data only when a user is authenticated
   useEffect(() => {
-    if (!authLoading) fetchData();
-  }, [authLoading, fetchData]);
+    if (!authLoading && currentUser) fetchData();
+    if (!authLoading && !currentUser) setDataLoading(false);
+  }, [authLoading, currentUser, fetchData]);
 
   const handleLogin  = (user) => setCurrentUser(user);
   const handleLogout = async () => {
