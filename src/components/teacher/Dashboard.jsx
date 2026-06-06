@@ -18,18 +18,19 @@ import FlippedMgr from "./FlippedMgr";
 import AssignmentsMgr from "./AssignmentsMgr";
 import Responses from "./Responses";
 import PlanningStudio from "../PlanningStudio/PlanningStudio";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 // ── Teacher navigation header ─────────────────────────────────────────────────
 
-function TeacherHeader({ user, currentView, setView, onLogout }) {
-  const tabs = [
-    { id: "dashboard",   label: "Dashboard",   icon: "📊" },
-    { id: "flipped",     label: "Material",    icon: "🎬" },
-    { id: "assignments", label: "Assignments", icon: "📋" },
-    { id: "responses",   label: "Responses",   icon: "👁" },
-    { id: "planning",    label: "Planning",    icon: "📝" },
-  ];
+const NAV_TABS = [
+  { id: "dashboard",   label: "Dashboard",   icon: "📊" },
+  { id: "flipped",     label: "Material",    icon: "🎬" },
+  { id: "assignments", label: "Assignments", icon: "📋" },
+  { id: "responses",   label: "Responses",   icon: "👁" },
+  { id: "planning",    label: "Planning",    icon: "📝" },
+];
 
+function TeacherHeader({ user, currentView, setView, onLogout, isMobile }) {
   return (
     <header
       style={{
@@ -74,33 +75,36 @@ function TeacherHeader({ user, currentView, setView, onLogout }) {
         </span>
       </div>
 
-      <nav style={{ display: "flex", gap: 2 }}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setView(tab.id)}
-            style={{
-              padding: "6px 10px",
-              borderRadius: 8,
-              border: "none",
-              background:
-                currentView === tab.id ? "rgba(99,102,241,0.2)" : "transparent",
-              color:
-                currentView === tab.id ? "#a78bfa" : "rgba(148,163,184,0.5)",
-              fontSize: 12,
-              fontWeight: currentView === tab.id ? 600 : 400,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              fontFamily: FONT_SANS,
-            }}
-          >
-            <span>{tab.icon}</span>
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </nav>
+      {/* Desktop nav — hidden on mobile (mobile uses tab bar below header) */}
+      {!isMobile && (
+        <nav style={{ display: "flex", gap: 2 }}>
+          {NAV_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setView(tab.id)}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 8,
+                border: "none",
+                background:
+                  currentView === tab.id ? "rgba(99,102,241,0.2)" : "transparent",
+                color:
+                  currentView === tab.id ? "#a78bfa" : "rgba(148,163,184,0.5)",
+                fontSize: 12,
+                fontWeight: currentView === tab.id ? 600 : 400,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontFamily: FONT_SANS,
+              }}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
 
       <button
         onClick={onLogout}
@@ -123,9 +127,67 @@ function TeacherHeader({ user, currentView, setView, onLogout }) {
   );
 }
 
+// ── Mobile horizontal tab bar ─────────────────────────────────────────────────
+
+function MobileTabBar({ currentView, setView }) {
+  return (
+    <div
+      style={{
+        background: "rgba(8,16,30,0.97)",
+        borderBottom: "1px solid rgba(99,102,241,0.2)",
+        overflowX: "auto",
+        WebkitOverflowScrolling: "touch",
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+        position: "sticky",
+        top: 56,
+        zIndex: 99,
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: 2,
+          padding: "6px 12px",
+          minWidth: "max-content",
+        }}
+      >
+        {NAV_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setView(tab.id)}
+            style={{
+              padding: "7px 14px",
+              borderRadius: 8,
+              border: "none",
+              background:
+                currentView === tab.id ? "rgba(99,102,241,0.2)" : "transparent",
+              color:
+                currentView === tab.id ? "#a78bfa" : "rgba(148,163,184,0.6)",
+              fontSize: 12,
+              fontWeight: currentView === tab.id ? 700 : 400,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              fontFamily: FONT_SANS,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            <span>{tab.icon}</span>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Dashboard: class analytics and student roster ─────────────────────────────
 
-function Dashboard({ roster, setRoster, flippedItems, assignments }) {
+function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
   const submittedCount      = roster.filter((student) => student.submitted).length;
   const reviewedCount       = roster.filter((student) => student.reviewed).length;
   const flaggedCount        = roster.filter((student) => student.pasteAttempts > 2).length;
@@ -233,7 +295,12 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
 
       {/* Stat cards */}
       <div
-        style={{ display: "flex", gap: 11, marginBottom: 22, flexWrap: "wrap" }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
+          gap: 11,
+          marginBottom: 22,
+        }}
       >
         <Stat
           icon="✅"
@@ -348,212 +415,227 @@ function Dashboard({ roster, setRoster, flippedItems, assignments }) {
           </span>
         </div>
 
-        {/* Column headers */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 100px 70px 60px 75px 115px",
-            padding: "9px 19px",
-            background: "rgba(0,0,0,0.2)",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-          }}
-        >
-          {columnHeaders.map((header, index) => (
+        {/* Scrollable table wrapper — enables horizontal scroll on mobile */}
+        <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          {/* Column headers */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobile
+                ? "140px 90px 55px 50px 65px 100px"
+                : "1fr 100px 70px 60px 75px 115px",
+              padding: "9px 19px",
+              background: "rgba(0,0,0,0.2)",
+              borderBottom: "1px solid rgba(255,255,255,0.05)",
+              minWidth: isMobile ? 500 : "auto",
+            }}
+          >
+            {columnHeaders.map((header, index) => (
+              <div
+                key={index}
+                style={{
+                  color: "rgba(148,163,184,0.45)",
+                  fontSize: isMobile ? 9 : 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  fontFamily: FONT_SANS,
+                }}
+              >
+                {header}
+              </div>
+            ))}
+          </div>
+
+          {/* Student rows */}
+          {roster.map((student, index) => (
             <div
-              key={index}
+              key={student.id}
               style={{
-                color: "rgba(148,163,184,0.45)",
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                fontFamily: FONT_SANS,
+                display: "grid",
+                gridTemplateColumns: isMobile
+                  ? "140px 90px 55px 50px 65px 100px"
+                  : "1fr 100px 70px 60px 75px 115px",
+                padding: isMobile ? "8px 19px" : "10px 19px",
+                borderBottom:
+                  index < roster.length - 1
+                    ? "1px solid rgba(255,255,255,0.04)"
+                    : "none",
+                alignItems: "center",
+                minWidth: isMobile ? 500 : "auto",
+                background:
+                  student.pasteAttempts > 2
+                    ? "rgba(239,68,68,0.04)"
+                    : "transparent",
               }}
             >
-              {header}
+              {/* Name + avatar */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div
+                  style={{
+                    width: isMobile ? 22 : 26,
+                    height: isMobile ? 22 : 26,
+                    borderRadius: "50%",
+                    background: student.submitted
+                      ? "linear-gradient(135deg,#3b82f6,#6366f1)"
+                      : "linear-gradient(135deg,rgba(100,116,139,0.4),rgba(71,85,105,0.4))",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff",
+                    fontSize: isMobile ? 8 : 10,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    fontFamily: FONT_SANS,
+                  }}
+                >
+                  {student.avatarInitials}
+                </div>
+                <span
+                  style={{
+                    color: student.pasteAttempts > 2 ? "#fca5a5" : "#e2e8f0",
+                    fontSize: isMobile ? 11 : 13,
+                    fontFamily: FONT_SANS,
+                    fontWeight: student.pasteAttempts > 2 ? 600 : 400,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {student.name}
+                </span>
+              </div>
+
+              {/* Submission status */}
+              <div>
+                {student.submitted ? (
+                  <span
+                    style={{
+                      background: student.reviewed
+                        ? "rgba(52,211,153,0.12)"
+                        : "rgba(251,191,36,0.12)",
+                      color: student.reviewed ? "#34d399" : "#fbbf24",
+                      fontSize: isMobile ? 9 : 10,
+                      fontWeight: 700,
+                      padding: "2px 7px",
+                      borderRadius: 20,
+                      fontFamily: FONT_SANS,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {student.reviewed ? "✓ Reviewed" : "Submitted"}
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      background: "rgba(148,163,184,0.08)",
+                      color: "rgba(148,163,184,0.5)",
+                      fontSize: isMobile ? 9 : 10,
+                      fontWeight: 700,
+                      padding: "2px 7px",
+                      borderRadius: 20,
+                      fontFamily: FONT_SANS,
+                    }}
+                  >
+                    Pending
+                  </span>
+                )}
+              </div>
+
+              {/* Tutor minutes */}
+              <div
+                style={{
+                  color:
+                    student.tutorMinutes > 0
+                      ? "#a78bfa"
+                      : "rgba(148,163,184,0.3)",
+                  fontSize: isMobile ? 11 : 12,
+                  fontFamily: FONT_SANS,
+                }}
+              >
+                {student.tutorMinutes > 0 ? `${student.tutorMinutes}m` : "—"}
+              </div>
+
+              {/* Tutor messages */}
+              <div
+                style={{
+                  color:
+                    student.tutorMessages > 0
+                      ? "rgba(167,139,250,0.7)"
+                      : "rgba(148,163,184,0.3)",
+                  fontSize: isMobile ? 11 : 12,
+                  fontFamily: FONT_SANS,
+                }}
+              >
+                {student.tutorMessages > 0 ? student.tutorMessages : "—"}
+              </div>
+
+              {/* Paste attempts */}
+              <div>
+                {student.pasteAttempts === 0 ? (
+                  <span
+                    style={{
+                      color: "rgba(148,163,184,0.3)",
+                      fontSize: isMobile ? 11 : 12,
+                      fontFamily: FONT_SANS,
+                    }}
+                  >
+                    —
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      background:
+                        student.pasteAttempts > 2
+                          ? "rgba(239,68,68,0.15)"
+                          : "rgba(251,191,36,0.12)",
+                      color:
+                        student.pasteAttempts > 2 ? "#f87171" : "#fbbf24",
+                      fontSize: isMobile ? 10 : 11,
+                      fontWeight: 700,
+                      padding: "2px 7px",
+                      borderRadius: 20,
+                      fontFamily: FONT_SANS,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {student.pasteAttempts > 2 ? "⚠️ " : ""}
+                    {student.pasteAttempts}x
+                  </span>
+                )}
+              </div>
+
+              {/* Review toggle */}
+              <div>
+                {student.submitted && (
+                  <button
+                    onClick={() => toggleReviewed(student.id)}
+                    style={{
+                      padding: isMobile ? "4px 8px" : "5px 10px",
+                      borderRadius: 8,
+                      border: student.reviewed
+                        ? "1px solid rgba(52,211,153,0.3)"
+                        : "1px solid rgba(255,255,255,0.1)",
+                      background: student.reviewed
+                        ? "rgba(52,211,153,0.1)"
+                        : "transparent",
+                      color: student.reviewed
+                        ? "#34d399"
+                        : "rgba(148,163,184,0.6)",
+                      fontSize: isMobile ? 9 : 10,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      fontFamily: FONT_SANS,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {student.reviewed ? "✓ Reviewed" : "Mark reviewed"}
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
-
-        {/* Student rows */}
-        {roster.map((student, index) => (
-          <div
-            key={student.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 100px 70px 60px 75px 115px",
-              padding: "10px 19px",
-              borderBottom:
-                index < roster.length - 1
-                  ? "1px solid rgba(255,255,255,0.04)"
-                  : "none",
-              alignItems: "center",
-              background:
-                student.pasteAttempts > 2
-                  ? "rgba(239,68,68,0.04)"
-                  : "transparent",
-            }}
-          >
-            {/* Name + avatar */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: "50%",
-                  background: student.submitted
-                    ? "linear-gradient(135deg,#3b82f6,#6366f1)"
-                    : "linear-gradient(135deg,rgba(100,116,139,0.4),rgba(71,85,105,0.4))",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  flexShrink: 0,
-                  fontFamily: FONT_SANS,
-                }}
-              >
-                {student.avatarInitials}
-              </div>
-              <span
-                style={{
-                  color: student.pasteAttempts > 2 ? "#fca5a5" : "#e2e8f0",
-                  fontSize: 13,
-                  fontFamily: FONT_SANS,
-                  fontWeight: student.pasteAttempts > 2 ? 600 : 400,
-                }}
-              >
-                {student.name}
-              </span>
-            </div>
-
-            {/* Submission status */}
-            <div>
-              {student.submitted ? (
-                <span
-                  style={{
-                    background: student.reviewed
-                      ? "rgba(52,211,153,0.12)"
-                      : "rgba(251,191,36,0.12)",
-                    color: student.reviewed ? "#34d399" : "#fbbf24",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    padding: "2px 8px",
-                    borderRadius: 20,
-                    fontFamily: FONT_SANS,
-                  }}
-                >
-                  {student.reviewed ? "✓ Reviewed" : "Submitted"}
-                </span>
-              ) : (
-                <span
-                  style={{
-                    background: "rgba(148,163,184,0.08)",
-                    color: "rgba(148,163,184,0.5)",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    padding: "2px 8px",
-                    borderRadius: 20,
-                    fontFamily: FONT_SANS,
-                  }}
-                >
-                  Pending
-                </span>
-              )}
-            </div>
-
-            {/* Tutor minutes */}
-            <div
-              style={{
-                color:
-                  student.tutorMinutes > 0
-                    ? "#a78bfa"
-                    : "rgba(148,163,184,0.3)",
-                fontSize: 12,
-                fontFamily: FONT_SANS,
-              }}
-            >
-              {student.tutorMinutes > 0 ? `${student.tutorMinutes}m` : "—"}
-            </div>
-
-            {/* Tutor messages */}
-            <div
-              style={{
-                color:
-                  student.tutorMessages > 0
-                    ? "rgba(167,139,250,0.7)"
-                    : "rgba(148,163,184,0.3)",
-                fontSize: 12,
-                fontFamily: FONT_SANS,
-              }}
-            >
-              {student.tutorMessages > 0 ? student.tutorMessages : "—"}
-            </div>
-
-            {/* Paste attempts */}
-            <div>
-              {student.pasteAttempts === 0 ? (
-                <span
-                  style={{
-                    color: "rgba(148,163,184,0.3)",
-                    fontSize: 12,
-                    fontFamily: FONT_SANS,
-                  }}
-                >
-                  —
-                </span>
-              ) : (
-                <span
-                  style={{
-                    background:
-                      student.pasteAttempts > 2
-                        ? "rgba(239,68,68,0.15)"
-                        : "rgba(251,191,36,0.12)",
-                    color:
-                      student.pasteAttempts > 2 ? "#f87171" : "#fbbf24",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "2px 8px",
-                    borderRadius: 20,
-                    fontFamily: FONT_SANS,
-                  }}
-                >
-                  {student.pasteAttempts > 2 ? "⚠️ " : ""}
-                  {student.pasteAttempts}x
-                </span>
-              )}
-            </div>
-
-            {/* Review toggle */}
-            <div>
-              {student.submitted && (
-                <button
-                  onClick={() => toggleReviewed(student.id)}
-                  style={{
-                    padding: "5px 10px",
-                    borderRadius: 8,
-                    border: student.reviewed
-                      ? "1px solid rgba(52,211,153,0.3)"
-                      : "1px solid rgba(255,255,255,0.1)",
-                    background: student.reviewed
-                      ? "rgba(52,211,153,0.1)"
-                      : "transparent",
-                    color: student.reviewed
-                      ? "#34d399"
-                      : "rgba(148,163,184,0.6)",
-                    fontSize: 10,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: FONT_SANS,
-                  }}
-                >
-                  {student.reviewed ? "✓ Reviewed" : "Mark as reviewed"}
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -573,6 +655,7 @@ export default function TeacherPortal({
   setRoster,
 }) {
   const [currentView, setCurrentView] = useState("dashboard");
+  const isMobile = useIsMobile();
 
   return (
     <div style={{ minHeight: "100vh", background: BACKGROUND_GRADIENT, color: "#fff" }}>
@@ -581,7 +664,12 @@ export default function TeacherPortal({
         currentView={currentView}
         setView={setCurrentView}
         onLogout={onLogout}
+        isMobile={isMobile}
       />
+      {/* Mobile-only horizontal tab bar rendered below the header */}
+      {isMobile && (
+        <MobileTabBar currentView={currentView} setView={setCurrentView} />
+      )}
       <main>
         {currentView === "dashboard" && (
           <Dashboard
@@ -589,6 +677,7 @@ export default function TeacherPortal({
             setRoster={setRoster}
             flippedItems={flippedItems}
             assignments={assignments}
+            isMobile={isMobile}
           />
         )}
         {currentView === "flipped" && (

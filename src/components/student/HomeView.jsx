@@ -15,6 +15,7 @@ import {
 } from "../../styles/tokens";
 import { todayStr, INITIAL_CONCEPTS } from "../../data/mockData";
 import { useSchoolHours } from "../../hooks/useSchoolHours";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import ContentViewer from "../shared/ContentViewer";
 import { TypeChip } from "../shared/Badge";
 import IntroView from "./IntroView";
@@ -23,6 +24,7 @@ import AssignmentView from "./AssignmentView";
 // ── Student navigation header ─────────────────────────────────────────────────
 
 function StudentHeader({ user, currentView, setView, onLogout }) {
+  const isMobile = useIsMobile();
   const tabs = [
     { id: "intro",      label: "Concepts",    icon: "💡" },
     { id: "home",       label: "Material",    icon: "🏠" },
@@ -58,14 +60,14 @@ function StudentHeader({ user, currentView, setView, onLogout }) {
             key={tab.id}
             onClick={() => setView(tab.id)}
             style={{
-              padding: "6px 10px",
+              padding: isMobile ? "6px 8px" : "6px 10px",
               borderRadius: 8,
               border: "none",
               background:
                 currentView === tab.id ? "rgba(59,130,246,0.2)" : "transparent",
               color:
                 currentView === tab.id ? "#60a5fa" : "rgba(148,163,184,0.55)",
-              fontSize: 12,
+              fontSize: isMobile ? 18 : 12,
               fontWeight: currentView === tab.id ? 600 : 400,
               cursor: "pointer",
               display: "flex",
@@ -75,7 +77,7 @@ function StudentHeader({ user, currentView, setView, onLogout }) {
             }}
           >
             <span>{tab.icon}</span>
-            <span>{tab.label}</span>
+            <span className="nav-label">{tab.label}</span>
           </button>
         ))}
       </nav>

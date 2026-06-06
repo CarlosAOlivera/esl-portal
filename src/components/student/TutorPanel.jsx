@@ -28,16 +28,10 @@ export default function TutorPanel({ activeQuestionIndex, questions, onClose }) 
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const panelWidth = Math.min(360, window.innerWidth - 16);
-
   return (
     <div
+      className="tutor-panel"
       style={{
-        position: "fixed",
-        right: 0,
-        top: 56,
-        bottom: 0,
-        width: panelWidth,
         background: "rgba(8,16,32,0.98)",
         borderLeft: "1px solid rgba(255,255,255,0.08)",
         display: "flex",

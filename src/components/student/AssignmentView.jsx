@@ -8,6 +8,7 @@ import { useState } from "react";
 import { CARD_STYLE, FONT_SANS, FONT_SERIF } from "../../styles/tokens";
 import { wordCount } from "../../data/mockData";
 import { useSchoolHours } from "../../hooks/useSchoolHours";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import TutorPanel from "./TutorPanel";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -29,6 +30,7 @@ export default function AssignmentView({ assignment }) {
   const [showPasteWarning, setShowPasteWarning] = useState(false);
 
   const isSchoolHours = useSchoolHours();
+  const isMobile = useIsMobile();
 
   const handleSubmit = async () => {
     if (!isAllComplete || isSubmitting) return;
@@ -171,7 +173,7 @@ export default function AssignmentView({ assignment }) {
   return (
     <div
       style={{
-        maxWidth: isTutorOpen ? "calc(100vw - 390px)" : 720,
+        maxWidth: isTutorOpen && !isMobile ? "calc(100vw - 390px)" : 720,
         margin: "0 auto",
         padding: "22px 20px 48px",
         transition: "max-width 0.3s",

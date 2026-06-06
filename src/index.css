@@ -1,107 +1,137 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@import "tailwindcss";
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+/* ── Project ELEVATE — Global Styles ────────────────────────────────────────── */
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  /* Brand palette */
+  --color-navy:       #0A1628;
+  --color-navy-mid:   #112040;
+  --color-navy-light: #1A3060;
+  --color-gold:       #E8A020;
+  --color-gold-light: #F5C060;
+  --color-teal:       #00B4A0;
+  --color-teal-light: #00D4BC;
+  --color-rose:       #E84060;
+  --color-slate:      #6080A0;
+  --color-white:      #F8FAFC;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* Typography */
+  --font-sans:  system-ui, sans-serif;
+  --font-serif: Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  background: #0A1628;
+  color: #F8FAFC;
+  font-family: system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+/* ── Mobile-first responsive overrides ─────────────────────────────────────── */
+
+/* Prevent horizontal scroll on all screens */
+html, body {
+  overflow-x: hidden;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+/* Ensure images and media don't overflow */
+img, video, iframe {
+  max-width: 100%;
+}
+
+/* Touch-friendly tap targets */
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Input zoom prevention on iOS (font-size >= 16px) */
+input, textarea, select {
+  font-size: 16px;
+}
+
+/* ── Utility classes used alongside inline styles ───────────────────────────── */
+
+/* Responsive padding for main content areas */
+.content-pad {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 640px) {
+  .content-pad {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+
+/* Mobile: hide text labels in nav, show on sm+ */
+.nav-label {
+  display: none;
+}
+
+@media (min-width: 400px) {
+  .nav-label {
+    display: inline;
   }
 }
-p {
-  margin: 0;
+
+/* Responsive card grid */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+@media (min-width: 640px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tutor panel — full-screen overlay on mobile, side drawer on desktop */
+.tutor-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .tutor-panel {
+    position: fixed;
+    top: 56px;
+    right: 0;
+    bottom: 0;
+    width: 380px;
+    inset: auto;
+    inset-inline-end: 0;
+    inset-block-start: 56px;
+    inset-block-end: 0;
+  }
+}
+
+/* PlanningStudio layout is handled by PlanningStudio.css */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
