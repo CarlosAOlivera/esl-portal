@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { INITIAL_ROSTER } from "./data/mockData";
 import LoginScreen from "./components/LoginScreen";
+import GroupSelectScreen from "./components/GroupSelectScreen";
 import StudentPortal from "./components/student/HomeView";
 import TeacherPortal from "./components/teacher/Dashboard";
 
@@ -51,26 +52,21 @@ function userFromSession(session) {
 // ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [currentUser,  setCurrentUser]  = useState(null);
-  const [authLoading,  setAuthLoading]  = useState(true);
-  const [dataLoading,  setDataLoading]  = useState(true);
-  const [flippedItems, setFlippedItems] = useState([]);
-  const [assignments,  setAssignments]  = useState([]);
-  const [roster,       setRoster]       = useState(INITIAL_ROSTER);
+  const [currentUser,   setCurrentUser]   = useState(null);
+  const [authLoading,   setAuthLoading]   = useState(true);
+  const [dataLoading,   setDataLoading]   = useState(true);
+  const [needsGroup,    setNeedsGroup]    = useState(false);  // student missing group_number
+  const [flippedItems,  setFlippedItems]  = useState([]);
+  const [assignments,   setAssignments]   = useState([]);
+  const [roster,        setRoster]        = useState(INITIAL_ROSTER);
 
   // Fetch assignments and materials from Supabase
   const fetchData = useCallback(async () => {
     setDataLoading(true);
     try {
       const [{ data: materialsData }, { data: assignmentsData }] = await Promise.all([
-        supabase
-          .from("materials")
-          .select("*")
-          .order("publish_date", { ascending: true }),
-        supabase
-          .from("assignments")
-          .select("*")
-          .order("created_at", { ascending: true }),
+        supabase.from("materials").select("*").order("publish_date", { ascending: true }),
+        supabase.from("assignments").select("*").order("created_at", { ascending: true }),
       ]);
       setFlippedItems((materialsData || []).map(fromMaterialRow));
       setAssignments((assignmentsData || []).map(fromAssignmentRow));
@@ -78,6 +74,21 @@ export default function App() {
       console.error("fetchData error:", err);
     } finally {
       setDataLoading(false);
+    }
+  }, []);
+
+  // Check if student has a group assigned
+  const checkGroup = useCallback(async (user) => {
+    if (user.role === "teacher") return;
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("group_number")
+        .eq("id", (await supabase.auth.getSession()).data.session.user.id)
+        .single();
+      if (!profile?.group_number) setNeedsGroup(true);
+    } catch {
+      // If profile check fails, skip — don't block the student
     }
   }, []);
 
@@ -90,27 +101,44 @@ export default function App() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setCurrentUser(session ? userFromSession(session) : null);
+      if (!session) setNeedsGroup(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch data only when a user is authenticated
+  // Fetch data + check group once authenticated
   useEffect(() => {
-    if (!authLoading && currentUser) fetchData();
-    if (!authLoading && !currentUser) setDataLoading(false);
-  }, [authLoading, currentUser, fetchData]);
+    if (!authLoading && currentUser) {
+      fetchData();
+      checkGroup(currentUser);
+    }
+    if (!authLoading && !currentUser) {
+      setDataLoading(false);
+    }
+  }, [authLoading, currentUser, fetchData, checkGroup]);
 
   const handleLogin  = (user) => setCurrentUser(user);
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setCurrentUser(null);
+    setNeedsGroup(false);
   };
 
   if (authLoading) return null;
 
   if (!currentUser) {
     return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  // Student needs to pick a group on first login
+  if (currentUser.role === "student" && needsGroup) {
+    return (
+      <GroupSelectScreen
+        user={currentUser}
+        onGroupSelected={() => setNeedsGroup(false)}
+      />
+    );
   }
 
   if (currentUser.role === "teacher") {
