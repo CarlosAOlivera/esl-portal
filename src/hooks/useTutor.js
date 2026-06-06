@@ -54,7 +54,7 @@ export function useTutor(activeQuestionIndex, questions) {
     try {
       // Requests go through the local Express proxy (server.js) which
       // injects the API key server-side — the key never reaches the browser.
-      const response = await fetch("http://localhost:3001/api/anthropic", {
+      const response = await fetch("/api/anthropic", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

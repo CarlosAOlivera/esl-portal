@@ -9,6 +9,7 @@ import { CARD_STYLE, FONT_SANS, FONT_SERIF } from "../../styles/tokens";
 import { wordCount } from "../../data/mockData";
 import { useSchoolHours } from "../../hooks/useSchoolHours";
 import TutorPanel from "./TutorPanel";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function AssignmentView({ assignment }) {
   // Answers keyed by question ID; MC questions start null, text questions start ""
@@ -21,11 +22,37 @@ export default function AssignmentView({ assignment }) {
     )
   );
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
-  const [isTutorOpen, setIsTutorOpen]     = useState(false);
-  const [isSubmitted, setIsSubmitted]     = useState(false);
+  const [isTutorOpen, setIsTutorOpen]       = useState(false);
+  const [isSubmitted, setIsSubmitted]       = useState(false);
+  const [isSubmitting, setIsSubmitting]     = useState(false);
+  const [submitError, setSubmitError]       = useState(null);
   const [showPasteWarning, setShowPasteWarning] = useState(false);
 
   const isSchoolHours = useSchoolHours();
+
+  const handleSubmit = async () => {
+    if (!isAllComplete || isSubmitting) return;
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error } = await supabase
+        .from("student_responses")
+        .upsert({
+          student_id: session.user.id,
+          assignment_id: assignment.id,
+          answers,
+          submitted_at: new Date().toISOString(),
+        });
+      if (error) throw error;
+      setIsSubmitted(true);
+    } catch (err) {
+      setSubmitError("Could not save your answers. Please try again.");
+      console.error("Submit error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Warns the student and suppresses paste/copy on text fields
   const handlePasteAttempt = (event) => {
@@ -111,7 +138,7 @@ export default function AssignmentView({ assignment }) {
             marginBottom: 24,
           }}
         >
-          Your answers were saved to SharePoint.
+          Your answers have been saved successfully.
         </p>
         <div
           style={{
@@ -529,31 +556,51 @@ export default function AssignmentView({ assignment }) {
           </button>
         ) : (
           <button
-            onClick={() => { if (isAllComplete) setIsSubmitted(true); }}
-            disabled={!isAllComplete}
+            onClick={handleSubmit}
+            disabled={!isAllComplete || isSubmitting}
             style={{
               padding: "10px 19px",
               borderRadius: 10,
               border: "none",
-              background: isAllComplete
+              background: isAllComplete && !isSubmitting
                 ? "linear-gradient(135deg,#3b82f6,#6366f1)"
                 : "rgba(255,255,255,0.07)",
-              color: isAllComplete ? "#fff" : "rgba(148,163,184,0.35)",
+              color: isAllComplete && !isSubmitting ? "#fff" : "rgba(148,163,184,0.35)",
               fontSize: 12,
               fontWeight: 600,
-              cursor: isAllComplete ? "pointer" : "not-allowed",
+              cursor: isAllComplete && !isSubmitting ? "pointer" : "not-allowed",
               fontFamily: FONT_SANS,
-              boxShadow: isAllComplete
+              boxShadow: isAllComplete && !isSubmitting
                 ? "0 4px 13px rgba(59,130,246,0.3)"
                 : "none",
             }}
           >
-            {isAllComplete
+            {isSubmitting
+              ? "Saving…"
+              : isAllComplete
               ? "Submit Assignment ✓"
               : `${questionCompletionFlags.filter((done) => !done).length} question(s) remaining`}
           </button>
         )}
       </div>
+
+      {/* Submit error */}
+      {submitError && (
+        <div
+          style={{
+            marginTop: 9,
+            padding: "8px 12px",
+            borderRadius: 9,
+            background: "rgba(239,68,68,0.07)",
+            border: "1px solid rgba(239,68,68,0.25)",
+            fontSize: 12,
+            color: "#f87171",
+            fontFamily: FONT_SANS,
+          }}
+        >
+          ⚠️ {submitError}
+        </div>
+      )}
 
       {/* Checklist of remaining requirements (shown on last question) */}
       {!isAllComplete && activeQuestionIndex === assignment.questions.length - 1 && (

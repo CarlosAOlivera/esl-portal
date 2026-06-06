@@ -89,7 +89,7 @@ ${freeContext ? `Additional context from teacher: ${freeContext}` : ""}
 Generate a complete, classroom-ready ${selectedDocType}. Format it clearly with sections, headers, and specific activities or criteria. Make it practical and immediately usable.`;
 
     try {
-      const response = await fetch("http://localhost:3001/api/anthropic", {
+      const response = await fetch("/api/anthropic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
