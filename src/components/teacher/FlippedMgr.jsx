@@ -13,6 +13,7 @@ import {
   daysUntil,
   flippedStat,
 } from "../../data/mockData";
+import { supabase } from "../../lib/supabaseClient";
 import Badge, { TypeChip } from "../shared/Badge";
 import Field from "../shared/Field";
 
@@ -26,11 +27,26 @@ const EMPTY_ITEM = {
   assignmentId: null,
 };
 
-export default function FlippedMgr({ flippedItems, setFlippedItems, assignments }) {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingId, setEditingId]   = useState(null);
-  const [draft, setDraft]           = useState(EMPTY_ITEM);
+function toRow(draft, id) {
+  return {
+    id,
+    type:          draft.type,
+    title:         draft.title.trim(),
+    unit:          draft.unit.trim(),
+    url:           draft.url.trim() || null,
+    description:   draft.description.trim() || null,
+    publish_date:  draft.publishDate,
+    assignment_id: draft.assignmentId || null,
+  };
+}
+
+export default function FlippedMgr({ flippedItems, assignments, onRefresh }) {
+  const [isFormOpen,  setIsFormOpen]  = useState(false);
+  const [editingId,   setEditingId]   = useState(null);
+  const [draft,       setDraft]       = useState(EMPTY_ITEM);
   const [showPreview, setShowPreview] = useState(false);
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState(null);
 
   // Sort all items by publish date for consistent grouping
   const sortedItems = useMemo(
@@ -45,43 +61,54 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
     setEditingId(null);
     setDraft({ ...EMPTY_ITEM, publishDate: daysFrom(1) });
     setShowPreview(false);
+    setError(null);
     setIsFormOpen(true);
   };
 
   const openEditForm = (item) => {
     setEditingId(item.id);
     setDraft({
-      type: item.type || "video",
-      title: item.title,
-      unit: item.unit,
-      url: item.url || "",
-      description: item.description,
-      publishDate: item.publishDate || "",
+      type:         item.type || "video",
+      title:        item.title,
+      unit:         item.unit,
+      url:          item.url || "",
+      description:  item.description,
+      publishDate:  item.publishDate || "",
       assignmentId: item.assignmentId || null,
     });
     setShowPreview(false);
+    setError(null);
     setIsFormOpen(true);
   };
 
-  const deleteItem = (itemId) =>
-    setFlippedItems((items) => items.filter((item) => item.id !== itemId));
+  const deleteItem = async (itemId) => {
+    if (!window.confirm("Delete this material? This cannot be undone.")) return;
+    const { error: err } = await supabase.from("materials").delete().eq("id", itemId);
+    if (err) { console.error(err); return; }
+    onRefresh();
+  };
 
   const updateDraft = (key, value) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
-  const saveItem = () => {
-    if (editingId) {
-      setFlippedItems((items) =>
-        items.map((item) => (item.id === editingId ? { ...item, ...draft } : item))
-      );
-    } else {
-      setFlippedItems((items) => [
-        ...items,
-        { ...draft, id: `f${Date.now()}` },
-      ]);
+  const saveItem = async () => {
+    if (!draft.title.trim() || !draft.publishDate) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const id  = editingId || `f${Date.now()}`;
+      const row = toRow(draft, id);
+      const { error: err } = await supabase.from("materials").upsert(row);
+      if (err) throw err;
+      setIsFormOpen(false);
+      setEditingId(null);
+      onRefresh();
+    } catch (err) {
+      console.error("saveItem:", err);
+      setError("Could not save. Please try again.");
+    } finally {
+      setSaving(false);
     }
-    setIsFormOpen(false);
-    setEditingId(null);
   };
 
   const statusGroups = [
@@ -433,50 +460,29 @@ export default function FlippedMgr({ flippedItems, setFlippedItems, assignments 
           )}
 
           {/* Form actions */}
-          <div
-            style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}
-          >
+          {error && (
+            <p style={{ color: "#f87171", fontSize: 12, margin: "0 0 10px", fontFamily: FONT_SANS }}>⚠️ {error}</p>
+          )}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <button
-              onClick={() => {
-                setIsFormOpen(false);
-                setEditingId(null);
-              }}
-              style={{
-                padding: "8px 14px",
-                borderRadius: 9,
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "transparent",
-                color: "rgba(148,163,184,0.6)",
-                fontSize: 12,
-                cursor: "pointer",
-                fontFamily: FONT_SANS,
-              }}
+              onClick={() => { setIsFormOpen(false); setEditingId(null); }}
+              style={{ padding: "8px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(148,163,184,0.6)", fontSize: 12, cursor: "pointer", fontFamily: FONT_SANS }}
             >
               Cancel
             </button>
             <button
               onClick={saveItem}
-              disabled={!draft.title || !draft.publishDate}
+              disabled={!draft.title || !draft.publishDate || saving}
               style={{
-                padding: "8px 16px",
-                borderRadius: 9,
-                border: "none",
-                background:
-                  draft.title && draft.publishDate
-                    ? "linear-gradient(135deg,#6366f1,#8b5cf6)"
-                    : "rgba(255,255,255,0.07)",
-                color:
-                  draft.title && draft.publishDate
-                    ? "#fff"
-                    : "rgba(148,163,184,0.4)",
-                fontSize: 12,
-                fontWeight: 600,
-                cursor:
-                  draft.title && draft.publishDate ? "pointer" : "not-allowed",
+                padding: "8px 16px", borderRadius: 9, border: "none",
+                background: draft.title && draft.publishDate && !saving ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "rgba(255,255,255,0.07)",
+                color: draft.title && draft.publishDate && !saving ? "#fff" : "rgba(148,163,184,0.4)",
+                fontSize: 12, fontWeight: 600,
+                cursor: draft.title && draft.publishDate && !saving ? "pointer" : "not-allowed",
                 fontFamily: FONT_SANS,
               }}
             >
-              Save
+              {saving ? "Saving…" : "Save"}
             </button>
           </div>
         </div>

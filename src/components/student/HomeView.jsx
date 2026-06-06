@@ -483,7 +483,7 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
 // ── StudentPortal: top-level shell that owns student tab routing ──────────────
 // Default export — imported by App.jsx to render the full student experience.
 
-export default function StudentPortal({ user, onLogout, flippedItems, assignments }) {
+export default function StudentPortal({ user, onLogout, flippedItems, assignments, dataLoading }) {
   const [currentView, setCurrentView]     = useState("intro");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 

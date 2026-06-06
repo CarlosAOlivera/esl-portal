@@ -655,11 +655,11 @@ export default function TeacherPortal({
   user,
   onLogout,
   flippedItems,
-  setFlippedItems,
   assignments,
-  setAssignments,
   roster,
   setRoster,
+  onRefresh,
+  dataLoading,
 }) {
   const [currentView, setCurrentView]     = useState("dashboard");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -687,15 +687,15 @@ export default function TeacherPortal({
         {currentView === "flipped" && (
           <FlippedMgr
             flippedItems={flippedItems}
-            setFlippedItems={setFlippedItems}
             assignments={assignments}
+            onRefresh={onRefresh}
           />
         )}
         {currentView === "assignments" && (
           <AssignmentsMgr
             assignments={assignments}
-            setAssignments={setAssignments}
             flippedItems={flippedItems}
+            onRefresh={onRefresh}
           />
         )}
         {currentView === "responses" && (
