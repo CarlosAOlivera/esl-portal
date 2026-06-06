@@ -30,13 +30,14 @@ export default function LoginScreen({ onLogin }) {
   const [error, setError]       = useState(null);
 
   // Sign-up state
-  const [fullName, setFullName]       = useState("");
-  const [regEmail, setRegEmail]       = useState("");
-  const [regPassword, setRegPassword] = useState("");
-  const [classCode, setClassCode]     = useState("");
+  const [fullName, setFullName]           = useState("");
+  const [regEmail, setRegEmail]           = useState("");
+  const [regPassword, setRegPassword]     = useState("");
+  const [classCode, setClassCode]         = useState("");
+  const [groupNumber, setGroupNumber]     = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
-  const [regError, setRegError]       = useState(null);
-  const [regSuccess, setRegSuccess]   = useState(false);
+  const [regError, setRegError]           = useState(null);
+  const [regSuccess, setRegSuccess]       = useState(false);
 
   // Fallback teacher PIN
   const [showFallback, setShowFallback] = useState(false);
@@ -71,6 +72,10 @@ export default function LoginScreen({ onLogin }) {
       setRegError("Incorrect class code. Ask your teacher for the code.");
       return;
     }
+    if (!groupNumber) {
+      setRegError("Please select your group number.");
+      return;
+    }
     if (regPassword.length < 8) {
       setRegError("Password must be at least 8 characters.");
       return;
@@ -83,8 +88,9 @@ export default function LoginScreen({ onLogin }) {
         password: regPassword,
         options: {
           data: {
-            full_name: fullName.trim(),
+            full_name:       fullName.trim(),
             avatar_initials: getInitials(fullName),
+            group_number:    groupNumber,
           },
         },
       });
@@ -349,14 +355,41 @@ export default function LoginScreen({ onLogin }) {
               style={inputStyle}
               required
             />
-            <input
-              type="text"
-              placeholder="Class code (ask your teacher)"
-              value={classCode}
-              onChange={(e) => setClassCode(e.target.value)}
-              style={{ ...inputStyle, marginBottom: 0 }}
-              required
-            />
+            {/* Group selector */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 0 }}>
+              <select
+                value={groupNumber}
+                onChange={(e) => setGroupNumber(e.target.value)}
+                required
+                style={{
+                  flex: 1,
+                  padding: "11px 14px",
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "rgba(255,255,255,0.05)",
+                  color: groupNumber ? "#fff" : "rgba(148,163,184,0.5)",
+                  fontSize: 14,
+                  fontFamily: FONT_SANS,
+                  outline: "none",
+                  marginBottom: 10,
+                  cursor: "pointer",
+                  colorScheme: "dark",
+                }}
+              >
+                <option value="">Select your group</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>Group {n}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Class code"
+                value={classCode}
+                onChange={(e) => setClassCode(e.target.value)}
+                style={{ flex: 1, padding: "11px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 14, fontFamily: FONT_SANS, outline: "none", marginBottom: 10 }}
+                required
+              />
+            </div>
 
             {regError && (
               <p style={{ color: "#f87171", fontSize: 12, margin: "8px 0 0", fontFamily: FONT_SANS }}>

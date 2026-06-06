@@ -195,10 +195,16 @@ function TeacherHeader({ user, currentView, setView, onAvatarClick, isMobile }) 
 // ── Dashboard: class analytics and student roster ─────────────────────────────
 
 function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
-  const submittedCount      = roster.filter((student) => student.submitted).length;
-  const reviewedCount       = roster.filter((student) => student.reviewed).length;
-  const flaggedCount        = roster.filter((student) => student.pasteAttempts > 2).length;
-  const studentsWhoUsedTutor = roster.filter((student) => student.tutorMinutes > 0);
+  const [groupFilter, setGroupFilter] = useState("all");
+
+  const filteredRoster = groupFilter === "all"
+    ? roster
+    : roster.filter((s) => String(s.group) === groupFilter);
+
+  const submittedCount      = filteredRoster.filter((student) => student.submitted).length;
+  const reviewedCount       = filteredRoster.filter((student) => student.reviewed).length;
+  const flaggedCount        = filteredRoster.filter((student) => student.pasteAttempts > 2).length;
+  const studentsWhoUsedTutor = filteredRoster.filter((student) => student.tutorMinutes > 0);
   const averageTutorMinutes  = studentsWhoUsedTutor.length
     ? Math.round(
         studentsWhoUsedTutor.reduce((total, student) => total + student.tutorMinutes, 0) /
@@ -312,8 +318,8 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
         <Stat
           icon="✅"
           label="Submitted"
-          value={`${submittedCount}/${roster.length}`}
-          sub={`${Math.round((submittedCount / roster.length) * 100)}%`}
+          value={`${submittedCount}/${filteredRoster.length}`}
+          sub={`${Math.round((submittedCount / (filteredRoster.length || 1)) * 100)}%`}
           color="#34d399"
         />
         <Stat
@@ -365,7 +371,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
               fontFamily: FONT_SANS,
             }}
           >
-            {submittedCount} of {roster.length}
+            {submittedCount} of {filteredRoster.length}
           </span>
         </div>
         <div
@@ -379,7 +385,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
           <div
             style={{
               height: "100%",
-              width: `${(submittedCount / roster.length) * 100}%`,
+              width: `${(submittedCount / (filteredRoster.length || 1)) * 100}%`,
               background: "linear-gradient(90deg,#3b82f6,#6366f1)",
               borderRadius: 4,
             }}
@@ -395,31 +401,35 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
             borderBottom: "1px solid rgba(255,255,255,0.07)",
             display: "flex",
             alignItems: "center",
+            flexWrap: "wrap",
             gap: 8,
           }}
         >
-          <span
-            style={{
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 14,
-              fontFamily: FONT_SANS,
-            }}
-          >
+          <span style={{ color: "#fff", fontWeight: 600, fontSize: 14, fontFamily: FONT_SANS }}>
             Student Summary
           </span>
-          <span
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              color: "rgba(148,163,184,0.6)",
-              fontSize: 11,
-              padding: "2px 8px",
-              borderRadius: 20,
-              fontFamily: FONT_SANS,
-            }}
-          >
-            {roster.length}
+          <span style={{ background: "rgba(255,255,255,0.06)", color: "rgba(148,163,184,0.6)", fontSize: 11, padding: "2px 8px", borderRadius: 20, fontFamily: FONT_SANS }}>
+            {filteredRoster.length}
           </span>
+          <div style={{ flex: 1 }} />
+          {/* Group filter */}
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            {["all", "1", "2", "3", "4", "5"].map((g) => (
+              <button
+                key={g}
+                onClick={() => setGroupFilter(g)}
+                style={{
+                  padding: "3px 10px", borderRadius: 20, fontSize: 10, fontWeight: groupFilter === g ? 700 : 400,
+                  border: groupFilter === g ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.08)",
+                  background: groupFilter === g ? "rgba(99,102,241,0.2)" : "transparent",
+                  color: groupFilter === g ? "#a78bfa" : "rgba(148,163,184,0.5)",
+                  cursor: "pointer", fontFamily: FONT_SANS,
+                }}
+              >
+                {g === "all" ? "All" : `G${g}`}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Scrollable table wrapper — enables horizontal scroll on mobile */}
@@ -455,7 +465,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
           </div>
 
           {/* Student rows */}
-          {roster.map((student, index) => (
+          {filteredRoster.map((student, index) => (
             <div
               key={student.id}
               style={{
@@ -465,7 +475,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
                   : "1fr 100px 70px 60px 75px 115px",
                 padding: isMobile ? "8px 19px" : "10px 19px",
                 borderBottom:
-                  index < roster.length - 1
+                  index < filteredRoster.length - 1
                     ? "1px solid rgba(255,255,255,0.04)"
                     : "none",
                 alignItems: "center",

@@ -8,16 +8,17 @@ import { supabase } from "../../lib/supabaseClient";
 
 export default function Responses() {
   const [responses, setResponses] = useState([]);
-  const [reviewed, setReviewed]   = useState({});   // keyed by response id
+  const [reviewed, setReviewed]   = useState({});
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState(null);
+  const [groupFilter, setGroupFilter] = useState("all"); // "all" | "1"–"5"
 
   useEffect(() => {
     async function fetchResponses() {
       setLoading(true);
       const { data, error } = await supabase
         .from("student_responses")
-        .select("*, profiles(full_name, avatar_initials)")
+        .select("*, profiles(full_name, avatar_initials, group_number)")
         .order("submitted_at", { ascending: false });
 
       if (error) {
@@ -31,6 +32,10 @@ export default function Responses() {
 
     fetchResponses();
   }, []);
+
+  const visibleResponses = groupFilter === "all"
+    ? responses
+    : responses.filter((r) => String(r.profiles?.group_number) === groupFilter);
 
   const toggleReviewed = (id) =>
     setReviewed((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -72,30 +77,42 @@ export default function Responses() {
   return (
     <div style={{ maxWidth: 820, margin: "0 auto", padding: "28px 20px" }}>
       <div style={{ marginBottom: 20 }}>
-        <h2
-          style={{
-            color: "#fff",
-            fontSize: 20,
-            margin: "0 0 3px",
-            fontFamily: FONT_SERIF,
-          }}
-        >
-          Class Responses
-        </h2>
-        <p
-          style={{
-            color: "rgba(148,163,184,0.5)",
-            fontSize: 13,
-            margin: 0,
-            fontFamily: FONT_SANS,
-          }}
-        >
-          {responses.length} submitted ·{" "}
-          {Object.values(reviewed).filter(Boolean).length} reviewed
-        </p>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <h2 style={{ color: "#fff", fontSize: 20, margin: "0 0 3px", fontFamily: FONT_SERIF }}>
+              Class Responses
+            </h2>
+            <p style={{ color: "rgba(148,163,184,0.5)", fontSize: 13, margin: 0, fontFamily: FONT_SANS }}>
+              {visibleResponses.length} submitted · {Object.values(reviewed).filter(Boolean).length} reviewed
+            </p>
+          </div>
+
+          {/* Group filter */}
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            {["all", "1", "2", "3", "4", "5"].map((g) => (
+              <button
+                key={g}
+                onClick={() => setGroupFilter(g)}
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: 20,
+                  border: groupFilter === g ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.1)",
+                  background: groupFilter === g ? "rgba(99,102,241,0.2)" : "transparent",
+                  color: groupFilter === g ? "#a78bfa" : "rgba(148,163,184,0.55)",
+                  fontSize: 11,
+                  fontWeight: groupFilter === g ? 700 : 400,
+                  cursor: "pointer",
+                  fontFamily: FONT_SANS,
+                }}
+              >
+                {g === "all" ? "All groups" : `Group ${g}`}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {responses.length === 0 && (
+      {visibleResponses.length === 0 && (
         <div
           style={{
             ...CARD_STYLE,
@@ -111,10 +128,11 @@ export default function Responses() {
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {responses.map((response) => {
+        {visibleResponses.map((response) => {
           const profile      = response.profiles || {};
           const name         = profile.full_name || "Unknown Student";
           const initials     = profile.avatar_initials || "??";
+          const groupNum     = profile.group_number;
           const isReviewed   = !!reviewed[response.id];
           const answers      = response.answers || {};
           const answerKeys   = Object.keys(answers);
@@ -160,15 +178,15 @@ export default function Responses() {
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      color: "#fff",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      fontFamily: FONT_SANS,
-                    }}
-                  >
-                    {name}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "#fff", fontSize: 13, fontWeight: 600, fontFamily: FONT_SANS }}>
+                      {name}
+                    </span>
+                    {groupNum && (
+                      <span style={{ background: "rgba(99,102,241,0.18)", color: "#a78bfa", fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, letterSpacing: "0.06em", fontFamily: FONT_SANS }}>
+                        GRP {groupNum}
+                      </span>
+                    )}
                   </div>
                   {submittedAt && (
                     <div
