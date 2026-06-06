@@ -33,158 +33,162 @@ const NAV_TABS = [
 ];
 
 function TeacherHeader({ user, currentView, setView, onAvatarClick, isMobile }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleTab = (id) => { setView(id); setMenuOpen(false); };
+  const handleProfile = () => { onAvatarClick(); setMenuOpen(false); };
+
+  const HEADER_BG = "rgba(8,16,30,0.97)";
+
   return (
-    <header
-      style={{
-        background: "rgba(8,16,30,0.97)",
-        borderBottom: "1px solid rgba(99,102,241,0.2)",
-        padding: "0 16px",
-        height: 56,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        backdropFilter: "blur(12px)",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 18 }}>📚</span>
-        <span
-          style={{
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 14,
-            fontFamily: FONT_SERIF,
-          }}
-        >
-          ESL 12
-        </span>
-        <span
-          style={{
-            background: "rgba(99,102,241,0.2)",
-            color: "#a78bfa",
-            fontSize: 10,
-            fontWeight: 700,
-            padding: "2px 8px",
-            borderRadius: 20,
-            letterSpacing: "0.08em",
-            fontFamily: FONT_SANS,
-          }}
-        >
-          TEACHER
-        </span>
-      </div>
-
-      {/* Desktop nav — hidden on mobile (mobile uses tab bar below header) */}
-      {!isMobile && (
-        <nav style={{ display: "flex", gap: 2 }}>
-          {NAV_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setView(tab.id)}
-              style={{
-                padding: "6px 10px",
-                borderRadius: 8,
-                border: "none",
-                background:
-                  currentView === tab.id ? "rgba(99,102,241,0.2)" : "transparent",
-                color:
-                  currentView === tab.id ? "#a78bfa" : "rgba(148,163,184,0.5)",
-                fontSize: 12,
-                fontWeight: currentView === tab.id ? 600 : 400,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                fontFamily: FONT_SANS,
-              }}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </nav>
-      )}
-
-      <button
-        onClick={onAvatarClick}
-        title="View profile"
+    <>
+      <header
         style={{
-          width: 34,
-          height: 34,
-          borderRadius: "50%",
-          background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
-          border: "none",
-          color: "#fff",
-          fontSize: 12,
-          fontWeight: 700,
-          cursor: "pointer",
-          fontFamily: FONT_SANS,
-        }}
-      >
-        {user.avatarInitials}
-      </button>
-    </header>
-  );
-}
-
-// ── Mobile horizontal tab bar ─────────────────────────────────────────────────
-
-function MobileTabBar({ currentView, setView }) {
-  return (
-    <div
-      style={{
-        background: "rgba(8,16,30,0.97)",
-        borderBottom: "1px solid rgba(99,102,241,0.2)",
-        overflowX: "auto",
-        WebkitOverflowScrolling: "touch",
-        scrollbarWidth: "none",
-        msOverflowStyle: "none",
-        position: "sticky",
-        top: 56,
-        zIndex: 99,
-        backdropFilter: "blur(12px)",
-      }}
-    >
-      <div
-        style={{
+          background: HEADER_BG,
+          borderBottom: "1px solid rgba(99,102,241,0.2)",
+          padding: "0 16px",
+          height: 56,
           display: "flex",
-          gap: 2,
-          padding: "6px 12px",
-          minWidth: "max-content",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "sticky",
+          top: 0,
+          zIndex: 200,
+          backdropFilter: "blur(12px)",
         }}
       >
-        {NAV_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setView(tab.id)}
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 18 }}>📚</span>
+          <span style={{ color: "#fff", fontWeight: 700, fontSize: 14, fontFamily: FONT_SERIF }}>
+            ESL 12
+          </span>
+          <span
             style={{
-              padding: "7px 14px",
-              borderRadius: 8,
-              border: "none",
-              background:
-                currentView === tab.id ? "rgba(99,102,241,0.2)" : "transparent",
-              color:
-                currentView === tab.id ? "#a78bfa" : "rgba(148,163,184,0.6)",
-              fontSize: 12,
-              fontWeight: currentView === tab.id ? 700 : 400,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              fontFamily: FONT_SANS,
-              whiteSpace: "nowrap",
-              flexShrink: 0,
+              background: "rgba(99,102,241,0.2)", color: "#a78bfa",
+              fontSize: 10, fontWeight: 700, padding: "2px 8px",
+              borderRadius: 20, letterSpacing: "0.08em", fontFamily: FONT_SANS,
             }}
           >
-            <span>{tab.icon}</span>
-            <span>{tab.label}</span>
+            TEACHER
+          </span>
+        </div>
+
+        {isMobile ? (
+          /* ── Portrait: hamburger button ── */
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            style={{
+              background: "none", border: "none", color: "#fff",
+              fontSize: 22, cursor: "pointer", padding: "4px 8px", lineHeight: 1,
+            }}
+          >
+            {menuOpen ? "✕" : "☰"}
           </button>
-        ))}
-      </div>
-    </div>
+        ) : (
+          /* ── Landscape: inline nav + avatar ── */
+          <>
+            <nav style={{ display: "flex", gap: 2 }}>
+              {NAV_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setView(tab.id)}
+                  style={{
+                    padding: "6px 10px", borderRadius: 8, border: "none",
+                    background: currentView === tab.id ? "rgba(99,102,241,0.2)" : "transparent",
+                    color: currentView === tab.id ? "#a78bfa" : "rgba(148,163,184,0.5)",
+                    fontSize: 12, fontWeight: currentView === tab.id ? 600 : 400,
+                    cursor: "pointer", display: "flex", alignItems: "center",
+                    gap: 4, fontFamily: FONT_SANS,
+                  }}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+            <button
+              onClick={onAvatarClick}
+              title="View profile"
+              style={{
+                width: 34, height: 34, borderRadius: "50%",
+                background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+                border: "none", color: "#fff", fontSize: 12,
+                fontWeight: 700, cursor: "pointer", fontFamily: FONT_SANS,
+              }}
+            >
+              {user.avatarInitials}
+            </button>
+          </>
+        )}
+      </header>
+
+      {/* ── Mobile dropdown menu ── */}
+      {isMobile && menuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setMenuOpen(false)}
+            style={{ position: "fixed", inset: 0, zIndex: 198, background: "rgba(0,0,0,0.4)" }}
+          />
+          {/* Menu panel */}
+          <div
+            style={{
+              position: "fixed", top: 56, left: 0, right: 0, zIndex: 199,
+              background: HEADER_BG, borderBottom: "1px solid rgba(99,102,241,0.15)",
+              backdropFilter: "blur(16px)", padding: "8px 0",
+            }}
+          >
+            {NAV_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTab(tab.id)}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center",
+                  gap: 14, padding: "14px 24px", border: "none",
+                  background: currentView === tab.id ? "rgba(99,102,241,0.12)" : "transparent",
+                  color: currentView === tab.id ? "#a78bfa" : "rgba(203,213,225,0.8)",
+                  fontSize: 15, fontWeight: currentView === tab.id ? 700 : 400,
+                  cursor: "pointer", fontFamily: FONT_SANS, textAlign: "left",
+                  borderLeft: currentView === tab.id ? "3px solid #6366f1" : "3px solid transparent",
+                }}
+              >
+                <span style={{ fontSize: 20 }}>{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "8px 0" }} />
+
+            {/* Profile */}
+            <button
+              onClick={handleProfile}
+              style={{
+                width: "100%", display: "flex", alignItems: "center",
+                gap: 14, padding: "14px 24px", border: "none",
+                background: "transparent", color: "rgba(203,213,225,0.8)",
+                fontSize: 15, cursor: "pointer", fontFamily: FONT_SANS,
+                textAlign: "left", borderLeft: "3px solid transparent",
+              }}
+            >
+              <div
+                style={{
+                  width: 28, height: 28, borderRadius: "50%",
+                  background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0,
+                }}
+              >
+                {user.avatarInitials}
+              </div>
+              My Profile &amp; Sign Out
+            </button>
+          </div>
+        </>
+      )}
+    </>
   );
 }
 
@@ -670,9 +674,6 @@ export default function TeacherPortal({
         onAvatarClick={() => setIsProfileOpen(true)}
         isMobile={isMobile}
       />
-      {isMobile && (
-        <MobileTabBar currentView={currentView} setView={setCurrentView} />
-      )}
       <main style={{ flex: 1 }}>
         {currentView === "dashboard" && (
           <Dashboard
