@@ -19,6 +19,8 @@ import AssignmentsMgr from "./AssignmentsMgr";
 import Responses from "./Responses";
 import PlanningStudio from "../PlanningStudio/PlanningStudio";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import ProfilePanel from "../shared/ProfilePanel";
+import Footer from "../shared/Footer";
 
 // ── Teacher navigation header ─────────────────────────────────────────────────
 
@@ -30,7 +32,7 @@ const NAV_TABS = [
   { id: "planning",    label: "Planning",    icon: "📝" },
 ];
 
-function TeacherHeader({ user, currentView, setView, onLogout, isMobile }) {
+function TeacherHeader({ user, currentView, setView, onAvatarClick, isMobile }) {
   return (
     <header
       style={{
@@ -107,7 +109,8 @@ function TeacherHeader({ user, currentView, setView, onLogout, isMobile }) {
       )}
 
       <button
-        onClick={onLogout}
+        onClick={onAvatarClick}
+        title="View profile"
         style={{
           width: 34,
           height: 34,
@@ -654,23 +657,23 @@ export default function TeacherPortal({
   roster,
   setRoster,
 }) {
-  const [currentView, setCurrentView] = useState("dashboard");
+  const [currentView, setCurrentView]     = useState("dashboard");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const isMobile = useIsMobile();
 
   return (
-    <div style={{ minHeight: "100vh", background: BACKGROUND_GRADIENT, color: "#fff" }}>
+    <div style={{ minHeight: "100vh", background: BACKGROUND_GRADIENT, color: "#fff", display: "flex", flexDirection: "column" }}>
       <TeacherHeader
         user={user}
         currentView={currentView}
         setView={setCurrentView}
-        onLogout={onLogout}
+        onAvatarClick={() => setIsProfileOpen(true)}
         isMobile={isMobile}
       />
-      {/* Mobile-only horizontal tab bar rendered below the header */}
       {isMobile && (
         <MobileTabBar currentView={currentView} setView={setCurrentView} />
       )}
-      <main>
+      <main style={{ flex: 1 }}>
         {currentView === "dashboard" && (
           <Dashboard
             roster={roster}
@@ -701,6 +704,16 @@ export default function TeacherPortal({
           <PlanningStudio user={user} />
         )}
       </main>
+
+      <Footer />
+
+      {isProfileOpen && (
+        <ProfilePanel
+          user={user}
+          onClose={() => setIsProfileOpen(false)}
+          onLogout={onLogout}
+        />
+      )}
     </div>
   );
 }

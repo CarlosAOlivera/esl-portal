@@ -4,7 +4,7 @@
 // Shows a locked screen outside school hours.
 // Integrates the AI TutorPanel as a collapsible side drawer.
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CARD_STYLE, FONT_SANS, FONT_SERIF } from "../../styles/tokens";
 import { wordCount } from "../../data/mockData";
 import { useSchoolHours } from "../../hooks/useSchoolHours";
@@ -29,8 +29,23 @@ export default function AssignmentView({ assignment }) {
   const [submitError, setSubmitError]       = useState(null);
   const [showPasteWarning, setShowPasteWarning] = useState(false);
 
+  // Academic integrity counters — saved to Supabase on submit
+  const pasteAttemptsRef = useRef(0);
+  const tabawayCountRef  = useRef(0);
+
   const isSchoolHours = useSchoolHours();
   const isMobile = useIsMobile();
+
+  // Track when the student leaves the assignment tab/window
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        tabawayCountRef.current += 1;
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
 
   const handleSubmit = async () => {
     if (!isAllComplete || isSubmitting) return;
@@ -45,6 +60,8 @@ export default function AssignmentView({ assignment }) {
           assignment_id: assignment.id,
           answers,
           submitted_at: new Date().toISOString(),
+          paste_attempts: pasteAttemptsRef.current,
+          tabaway_count:  tabawayCountRef.current,
         });
       if (error) throw error;
       setIsSubmitted(true);
@@ -56,9 +73,10 @@ export default function AssignmentView({ assignment }) {
     }
   };
 
-  // Warns the student and suppresses paste/copy on text fields
+  // Warns the student and increments paste counter
   const handlePasteAttempt = (event) => {
     event.preventDefault();
+    pasteAttemptsRef.current += 1;
     setShowPasteWarning(true);
     setTimeout(() => setShowPasteWarning(false), 3000);
   };

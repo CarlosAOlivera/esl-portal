@@ -20,10 +20,12 @@ import ContentViewer from "../shared/ContentViewer";
 import { TypeChip } from "../shared/Badge";
 import IntroView from "./IntroView";
 import AssignmentView from "./AssignmentView";
+import ProfilePanel from "../shared/ProfilePanel";
+import Footer from "../shared/Footer";
 
 // ── Student navigation header ─────────────────────────────────────────────────
 
-function StudentHeader({ user, currentView, setView, onLogout }) {
+function StudentHeader({ user, currentView, setView, onAvatarClick }) {
   const isMobile = useIsMobile();
   const tabs = [
     { id: "intro",      label: "Concepts",    icon: "💡" },
@@ -83,7 +85,8 @@ function StudentHeader({ user, currentView, setView, onLogout }) {
       </nav>
 
       <button
-        onClick={onLogout}
+        onClick={onAvatarClick}
+        title="View profile"
         style={{
           width: 34,
           height: 34,
@@ -372,21 +375,21 @@ function HomeView({ flippedItems, assignment, onGoToAssignment }) {
 // Default export — imported by App.jsx to render the full student experience.
 
 export default function StudentPortal({ user, onLogout, flippedItems, assignments }) {
-  const [currentView, setCurrentView] = useState("intro");
+  const [currentView, setCurrentView]     = useState("intro");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // Only one assignment is active at a time (status === "published")
   const activeAssignment =
     assignments.find((assignment) => assignment.status === "published") || null;
 
   return (
-    <div style={{ minHeight: "100vh", background: BACKGROUND_GRADIENT, color: "#fff" }}>
+    <div style={{ minHeight: "100vh", background: BACKGROUND_GRADIENT, color: "#fff", display: "flex", flexDirection: "column" }}>
       <StudentHeader
         user={user}
         currentView={currentView}
         setView={setCurrentView}
-        onLogout={onLogout}
+        onAvatarClick={() => setIsProfileOpen(true)}
       />
-      <main>
+      <main style={{ flex: 1 }}>
         {currentView === "intro" && (
           <IntroView
             onContinue={() => setCurrentView("home")}
@@ -413,13 +416,7 @@ export default function StudentPortal({ user, onLogout, flippedItems, assignment
             }}
           >
             <div style={{ fontSize: 40, marginBottom: 14 }}>📭</div>
-            <h2
-              style={{
-                color: "#fff",
-                fontFamily: FONT_SERIF,
-                marginBottom: 8,
-              }}
-            >
+            <h2 style={{ color: "#fff", fontFamily: FONT_SERIF, marginBottom: 8 }}>
               No active assignment
             </h2>
             <p style={{ color: "rgba(148,163,184,0.6)", fontFamily: FONT_SANS }}>
@@ -428,6 +425,16 @@ export default function StudentPortal({ user, onLogout, flippedItems, assignment
           </div>
         )}
       </main>
+
+      <Footer />
+
+      {isProfileOpen && (
+        <ProfilePanel
+          user={user}
+          onClose={() => setIsProfileOpen(false)}
+          onLogout={onLogout}
+        />
+      )}
     </div>
   );
 }
