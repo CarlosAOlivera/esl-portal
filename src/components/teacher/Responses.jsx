@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { CARD_STYLE, FONT_SANS, FONT_SERIF } from "../../styles/tokens";
 import { supabase } from "../../lib/supabaseClient";
 
-export default function Responses() {
+export default function Responses({ assignments = [] }) {
   const [responses, setResponses] = useState([]);
   const [reviewed, setReviewed]   = useState({});
   const [loading, setLoading]     = useState(true);
@@ -136,6 +136,7 @@ export default function Responses() {
           const isReviewed   = !!reviewed[response.id];
           const answers      = response.answers || {};
           const answerKeys   = Object.keys(answers);
+          const assignment   = assignments.find((a) => a.id === response.assignment_id);
           const submittedAt  = response.submitted_at
             ? new Date(response.submitted_at).toLocaleString("en-US")
             : "";
@@ -248,13 +249,21 @@ export default function Responses() {
                   </div>
                 )}
                 {answerKeys.map((questionId, index) => {
-                  const value = answers[questionId];
-                  const display =
-                    value === null
-                      ? "(no answer)"
-                      : typeof value === "number"
-                      ? `Option ${String.fromCharCode(65 + value)} selected`
-                      : value || "(empty)";
+                  const value    = answers[questionId];
+                  const question = assignment?.questions?.find((q) => q.id === questionId);
+                  const isMC     = typeof value === "number";
+                  const letter   = isMC ? String.fromCharCode(65 + value) : null;
+
+                  // Grading for MC: only if correctIndex is explicitly set
+                  const hasKey   = isMC && question?.correctIndex != null;
+                  const isCorrect = hasKey && value === question.correctIndex;
+                  const isWrong   = hasKey && value !== question.correctIndex;
+
+                  const display = value === null
+                    ? "(no answer)"
+                    : isMC
+                    ? `Option ${letter} — ${question?.options?.[value] || ""}`
+                    : value || "(empty)";
 
                   return (
                     <div key={questionId}>
@@ -267,20 +276,37 @@ export default function Responses() {
                           textTransform: "uppercase",
                           marginBottom: 4,
                           fontFamily: FONT_SANS,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
                         }}
                       >
                         Question {index + 1}
+                        {isCorrect && <span style={{ color: "#34d399", fontSize: 11 }}>✓ Correct</span>}
+                        {isWrong   && (
+                          <span style={{ color: "#f87171", fontSize: 11 }}>
+                            ✗ Wrong — correct: Option {String.fromCharCode(65 + question.correctIndex)}
+                          </span>
+                        )}
                       </div>
                       <div
                         style={{
-                          color: "#cbd5e1",
+                          color: isCorrect ? "#34d399" : isWrong ? "#f87171" : "#cbd5e1",
                           fontSize: 13,
                           lineHeight: 1.65,
                           fontFamily: FONT_SANS,
-                          background: "rgba(255,255,255,0.03)",
+                          background: isCorrect
+                            ? "rgba(52,211,153,0.07)"
+                            : isWrong
+                            ? "rgba(248,113,113,0.07)"
+                            : "rgba(255,255,255,0.03)",
                           borderRadius: 8,
                           padding: "9px 12px",
-                          border: "1px solid rgba(255,255,255,0.06)",
+                          border: isCorrect
+                            ? "1px solid rgba(52,211,153,0.2)"
+                            : isWrong
+                            ? "1px solid rgba(248,113,113,0.2)"
+                            : "1px solid rgba(255,255,255,0.06)",
                         }}
                       >
                         {display}

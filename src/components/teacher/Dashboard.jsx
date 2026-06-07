@@ -707,7 +707,7 @@ export default function TeacherPortal({
           />
         )}
         {currentView === "responses" && (
-          <Responses />
+          <Responses assignments={assignments} />
         )}
         {currentView === "planning" && (
           <PlanningStudio user={user} />

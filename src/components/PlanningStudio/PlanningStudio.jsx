@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { CARD_STYLE, FONT_SANS, FONT_SERIF } from "../../styles/tokens";
+import { UNITS_CONCEPTS } from "../../data/mockData";
 import DocumentPreview from "./DocumentPreview";
 import SessionHistory from "./SessionHistory";
 import "./PlanningStudio.css";
 
-const UNITS = [
-  "Unit 1: Identity & Community (Weeks 1–6)",
-  "Unit 2: Technology & Society (Weeks 7–13)",
-  "Unit 3: Environmental Challenges (Weeks 14–20)",
-  "Unit 4: Career & Future Goals (Weeks 21–26)",
-  "Unit 5: Global Citizenship (Weeks 27–32)",
-  "Unit 6: The Long and Short of It — Literary Elements (Weeks 33–38)",
-];
+// Build unit options from real curriculum seed data
+const UNITS = Object.values(UNITS_CONCEPTS).map((u) => ({
+  label: `${u.unit} — ${u.title}`,
+  data:  u,
+}));
 
 const DOC_TYPES = [
   "Lesson Plan",
@@ -59,7 +57,7 @@ function LabeledField({ label, children }) {
 }
 
 export default function PlanningStudio({ user }) {
-  const [selectedUnit, setSelectedUnit]           = useState("");
+  const [selectedUnit, setSelectedUnit]           = useState(null); // full unit object from UNITS_CONCEPTS
   const [selectedSkill, setSelectedSkill]         = useState("");
   const [selectedDocType, setSelectedDocType]     = useState("");
   const [selectedProficiency, setSelectedProficiency] = useState("");
@@ -70,7 +68,7 @@ export default function PlanningStudio({ user }) {
 
   const canGenerate =
     !isGenerating &&
-    selectedUnit !== "" &&
+    selectedUnit !== null &&
     selectedSkill !== "" &&
     selectedDocType !== "" &&
     selectedProficiency !== "";
@@ -79,14 +77,24 @@ export default function PlanningStudio({ user }) {
     if (!canGenerate) return;
     setIsGenerating(true);
 
+    const unitConceptList = (selectedUnit.concepts || [])
+      .map((c) => `• ${c.term}: ${c.definition}`)
+      .join("\n");
+
     const prompt = `You are an expert ESL curriculum designer working with Prof. Carlos Olivera at Escuela Superior Fernando Suria Chaves, Barceloneta, Puerto Rico. Generate a ${selectedDocType} for Grade 12 ESL students aligned to the PR Department of Education Pacing Calendar.
 
-Unit: ${selectedUnit}
-Skill Focus: ${selectedSkill}
-Proficiency Level: ${selectedProficiency}
-${freeContext ? `Additional context from teacher: ${freeContext}` : ""}
+UNIT: ${selectedUnit.unit} — ${selectedUnit.title}
+OVERVIEW: ${selectedUnit.overview}
+KEY QUESTION: ${selectedUnit.keyQuestion}
+KEY VOCABULARY & CONCEPTS:
+${unitConceptList}
 
-Generate a complete, classroom-ready ${selectedDocType}. Format it clearly with sections, headers, and specific activities or criteria. Make it practical and immediately usable.`;
+DOCUMENT TYPE: ${selectedDocType}
+SKILL FOCUS: ${selectedSkill}
+PROFICIENCY LEVEL: ${selectedProficiency}
+${freeContext ? `ADDITIONAL CONTEXT FROM TEACHER: ${freeContext}` : ""}
+
+Generate a complete, classroom-ready ${selectedDocType}. Reference the unit's key concepts and vocabulary above wherever relevant. Format it clearly with sections, headers, and specific activities or criteria. Make it practical and immediately usable.`;
 
     try {
       const response = await fetch("/api/anthropic", {
@@ -103,10 +111,10 @@ Generate a complete, classroom-ready ${selectedDocType}. Format it clearly with 
       const responseText = data.content[0].text;
 
       const doc = {
-        title: `${selectedDocType} — ${selectedUnit.split(":")[0]}`,
+        title: `${selectedDocType} — ${selectedUnit.unit}`,
         content: responseText,
         docType: selectedDocType,
-        unit: selectedUnit,
+        unit: `${selectedUnit.unit} — ${selectedUnit.title}`,
         skill: selectedSkill,
         proficiency: selectedProficiency,
         generatedAt: new Date().toLocaleString("en-US"),
@@ -161,14 +169,17 @@ Generate a complete, classroom-ready ${selectedDocType}. Format it clearly with 
 
           <LabeledField label="Unit">
             <select
-              value={selectedUnit}
-              onChange={(e) => setSelectedUnit(e.target.value)}
+              value={selectedUnit ? selectedUnit.unit : ""}
+              onChange={(e) => {
+                const found = UNITS.find((u) => u.data.unit === e.target.value);
+                setSelectedUnit(found ? found.data : null);
+              }}
               style={{ ...FIELD_STYLE, cursor: "pointer" }}
             >
               <option value="">Select…</option>
               {UNITS.map((u) => (
-                <option key={u} value={u}>
-                  {u}
+                <option key={u.data.unit} value={u.data.unit}>
+                  {u.label}
                 </option>
               ))}
             </select>

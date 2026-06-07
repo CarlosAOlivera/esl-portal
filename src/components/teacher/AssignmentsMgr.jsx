@@ -18,6 +18,7 @@ const EMPTY_QUESTION = {
   type: "multiple_choice",
   text: "",
   options: ["", "", "", ""],
+  correctIndex: null,
   minWords: 30,
 };
 
@@ -69,7 +70,7 @@ export default function AssignmentsMgr({ assignments, flippedItems, onRefresh })
       type: questionForm.type,
       text: questionForm.text,
       ...(questionForm.type === "multiple_choice"
-        ? { options: questionForm.options.map((o) => o.trim()).filter(Boolean) }
+        ? { options: questionForm.options.map((o) => o.trim()).filter(Boolean), correctIndex: questionForm.correctIndex }
         : { placeholder: "Write your answer here...", minWords: questionForm.minWords }),
     };
     updateDraft("questions", [...draft.questions, q]);
@@ -312,15 +313,33 @@ export default function AssignmentsMgr({ assignments, flippedItems, onRefresh })
                 />
 
                 {questionForm.type === "multiple_choice" && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 10 }}>
-                    {["A","B","C","D"].map((letter, i) => (
-                      <div key={letter} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "rgba(148,163,184,0.7)", flexShrink: 0, fontFamily: FONT_SANS }}>
-                          {letter}
-                        </span>
-                        <input value={questionForm.options[i]} onChange={(e) => updateOption(i, e.target.value)} placeholder={`Option ${letter}`} style={inputStyle} />
-                      </div>
-                    ))}
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ color: "rgba(52,211,153,0.55)", fontSize: 10, fontFamily: FONT_SANS, marginBottom: 6 }}>
+                      Click the letter to mark the correct answer
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                      {["A","B","C","D"].map((letter, i) => (
+                        <div key={letter} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <button
+                            type="button"
+                            onClick={() => updateQuestionForm("correctIndex", questionForm.correctIndex === i ? null : i)}
+                            title="Mark as correct answer"
+                            style={{
+                              width: 22, height: 22, borderRadius: "50%",
+                              background: questionForm.correctIndex === i ? "rgba(52,211,153,0.25)" : "rgba(255,255,255,0.06)",
+                              border: questionForm.correctIndex === i ? "1px solid rgba(52,211,153,0.6)" : "1px solid rgba(255,255,255,0.12)",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 10, fontWeight: 700,
+                              color: questionForm.correctIndex === i ? "#34d399" : "rgba(148,163,184,0.7)",
+                              flexShrink: 0, fontFamily: FONT_SANS, cursor: "pointer", padding: 0,
+                            }}
+                          >
+                            {questionForm.correctIndex === i ? "✓" : letter}
+                          </button>
+                          <input value={questionForm.options[i]} onChange={(e) => updateOption(i, e.target.value)} placeholder={`Option ${letter}`} style={inputStyle} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 

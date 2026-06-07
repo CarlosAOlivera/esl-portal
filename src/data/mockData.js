@@ -73,7 +73,7 @@ export function currentSchoolWeek() {
 // Each unit covers: unit label, title, overview, keyQuestion, and concept cards.
 // Aligned to the PR DE Pacing Calendar and the official unit guides.
 
-const UNITS_CONCEPTS = {
+export const UNITS_CONCEPTS = {
 
   // ── Unit 12.1 My Journey So Far ──────────────────────────────────────────
   // Weeks 2–7 (Aug 10 – Sep 11, 2026)
