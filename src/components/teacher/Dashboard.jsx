@@ -194,15 +194,16 @@ function TeacherHeader({ user, currentView, setView, onAvatarClick, isMobile }) 
 
 // ── Dashboard: class analytics and student roster ─────────────────────────────
 
-function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
+function Dashboard({ roster, flippedItems, assignments, isMobile }) {
   const [groupFilter, setGroupFilter] = useState("all");
+  const [reviewed,    setReviewed]    = useState({}); // local state keyed by student id
 
   const filteredRoster = groupFilter === "all"
     ? roster
     : roster.filter((s) => String(s.group) === groupFilter);
 
   const submittedCount      = filteredRoster.filter((student) => student.submitted).length;
-  const reviewedCount       = filteredRoster.filter((student) => student.reviewed).length;
+  const reviewedCount       = Object.values(reviewed).filter(Boolean).length;
   const flaggedCount        = filteredRoster.filter((student) => student.pasteAttempts > 2).length;
   const studentsWhoUsedTutor = filteredRoster.filter((student) => student.tutorMinutes > 0);
   const averageTutorMinutes  = studentsWhoUsedTutor.length
@@ -217,13 +218,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
     .sort((first, second) => first.publishDate.localeCompare(second.publishDate))[0];
 
   const toggleReviewed = (studentId) =>
-    setRoster((currentRoster) =>
-      currentRoster.map((student) =>
-        student.id === studentId
-          ? { ...student, reviewed: !student.reviewed }
-          : student
-      )
-    );
+    setReviewed((prev) => ({ ...prev, [studentId]: !prev[studentId] }));
 
   const columnHeaders = ["Student", "Status", "Tutor", "Msgs", "Paste", ""];
 
@@ -521,6 +516,11 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
                 >
                   {student.name}
                 </span>
+                {student.group && (
+                  <span style={{ background: "rgba(99,102,241,0.15)", color: "#a78bfa", fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 20, fontFamily: FONT_SANS, marginLeft: 5 }}>
+                    G{student.group}
+                  </span>
+                )}
               </div>
 
               {/* Submission status */}
@@ -528,10 +528,10 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
                 {student.submitted ? (
                   <span
                     style={{
-                      background: student.reviewed
+                      background: reviewed[student.id]
                         ? "rgba(52,211,153,0.12)"
                         : "rgba(251,191,36,0.12)",
-                      color: student.reviewed ? "#34d399" : "#fbbf24",
+                      color: reviewed[student.id] ? "#34d399" : "#fbbf24",
                       fontSize: isMobile ? 9 : 10,
                       fontWeight: 700,
                       padding: "2px 7px",
@@ -540,7 +540,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {student.reviewed ? "✓ Reviewed" : "Submitted"}
+                    {reviewed[student.id] ? "✓ Reviewed" : "Submitted"}
                   </span>
                 ) : (
                   <span
@@ -630,13 +630,13 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
                     style={{
                       padding: isMobile ? "4px 8px" : "5px 10px",
                       borderRadius: 8,
-                      border: student.reviewed
+                      border: reviewed[student.id]
                         ? "1px solid rgba(52,211,153,0.3)"
                         : "1px solid rgba(255,255,255,0.1)",
-                      background: student.reviewed
+                      background: reviewed[student.id]
                         ? "rgba(52,211,153,0.1)"
                         : "transparent",
-                      color: student.reviewed
+                      color: reviewed[student.id]
                         ? "#34d399"
                         : "rgba(148,163,184,0.6)",
                       fontSize: isMobile ? 9 : 10,
@@ -646,7 +646,7 @@ function Dashboard({ roster, setRoster, flippedItems, assignments, isMobile }) {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {student.reviewed ? "✓ Reviewed" : "Mark reviewed"}
+                    {reviewed[student.id] ? "✓ Reviewed" : "Mark reviewed"}
                   </button>
                 )}
               </div>
@@ -667,7 +667,6 @@ export default function TeacherPortal({
   flippedItems,
   assignments,
   roster,
-  setRoster,
   onRefresh,
   dataLoading,
 }) {
@@ -688,7 +687,6 @@ export default function TeacherPortal({
         {currentView === "dashboard" && (
           <Dashboard
             roster={roster}
-            setRoster={setRoster}
             flippedItems={flippedItems}
             assignments={assignments}
             isMobile={isMobile}

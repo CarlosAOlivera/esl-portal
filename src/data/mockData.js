@@ -1,22 +1,11 @@
 // mockData.js — Seed data and utility functions for the ESL portal.
-// Curriculum content is aligned to the PR Department of Education
-// Grade 12 ESL Pacing Calendar (2026–2027 school year).
-//
-// Units:
-//   12.1 My Journey So Far         — 6 weeks  (Aug wks 2–7)
-//   12.2 Walking into the Future   — 7 weeks  (Sep–Oct wks 8–15)
-//   12.3 Poetic Justice            — 6 weeks  (Oct–Nov wks 15–20)
-//   12.4 Then and Now              — 7 weeks  (Jan wks 24–30)
-//   12.5 See It My Way             — 6 weeks  (Mar–Apr wks 31–36)
-//   12.6 The Long and Short of It  — 6 weeks  (Apr–May wks 37–42)
+// Curriculum content aligned to PR Department of Education Grade 12 ESL
+// Pacing Calendar 2026–2027.
 
 // ── Feature flags ─────────────────────────────────────────────────────────────
-
-// Set to false in production to enforce real school-hours gating
 export const DEMO_MODE = true;
 
 // ── Date utilities ────────────────────────────────────────────────────────────
-
 export const todayStr = () => new Date().toISOString().slice(0, 10);
 
 export const daysFrom = (offset) => {
@@ -29,9 +18,7 @@ export const fmtDate = (isoDate) => {
   if (!isoDate) return "—";
   const [year, month, day] = isoDate.split("-");
   return new Date(year, month - 1, day).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
+    weekday: "short", month: "short", day: "numeric",
   });
 };
 
@@ -56,112 +43,328 @@ export const fmtTimer = (totalSeconds) =>
   `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`;
 
 // ── Content type config ───────────────────────────────────────────────────────
-
 export const CONTENT_TYPES = {
-  video: {
-    icon: "🎬",
-    label: "Video",
-    color: "#f59e0b",
-    urlLabel: "Video URL (YouTube, Teams)",
-    ph: "https://youtube.com/watch?v=...",
-  },
-  podcast: {
-    icon: "🎙",
-    label: "Podcast",
-    color: "#22d3ee",
-    urlLabel: "Audio URL (NotebookLM)",
-    ph: "https://notebooklm.google.com/...",
-  },
-  pdf: {
-    icon: "📄",
-    label: "PDF",
-    color: "#f87171",
-    urlLabel: "PDF URL (Google Drive / OneDrive)",
-    ph: "https://drive.google.com/...",
-  },
-  website: {
-    icon: "🌐",
-    label: "Website",
-    color: "#34d399",
-    urlLabel: "Website URL",
-    ph: "https://...",
-  },
+  video:   { icon: "🎬", label: "Video",   color: "#f59e0b", urlLabel: "Video URL (YouTube, Teams)",     ph: "https://youtube.com/watch?v=..." },
+  podcast: { icon: "🎙", label: "Podcast", color: "#22d3ee", urlLabel: "Audio URL (NotebookLM)",          ph: "https://notebooklm.google.com/..." },
+  pdf:     { icon: "📄", label: "PDF",     color: "#f87171", urlLabel: "PDF URL (Google Drive / OneDrive)", ph: "https://drive.google.com/..." },
+  website: { icon: "🌐", label: "Website", color: "#34d399", urlLabel: "Website URL",                     ph: "https://..." },
 };
 
 // ── Status badge config ───────────────────────────────────────────────────────
-
 export const STATUS_CONFIG = {
-  published: { bg: "rgba(52,211,153,0.13)",  color: "#34d399",             label: "● Published" },
-  scheduled: { bg: "rgba(99,102,241,0.13)",  color: "#a78bfa",             label: "◷ Scheduled" },
-  draft:     { bg: "rgba(148,163,184,0.1)",  color: "rgba(148,163,184,0.5)", label: "○ Draft"   },
+  published: { bg: "rgba(52,211,153,0.13)",  color: "#34d399",              label: "● Published" },
+  scheduled: { bg: "rgba(99,102,241,0.13)",  color: "#a78bfa",              label: "◷ Scheduled" },
+  draft:     { bg: "rgba(148,163,184,0.1)",  color: "rgba(148,163,184,0.5)", label: "○ Draft"    },
 };
 
-// ── Seed class roster (teacher dashboard — will be replaced by Supabase data) ─
+// ── School calendar ───────────────────────────────────────────────────────────
+// School year 2026–2027 starts Monday, August 3, 2026.
+// Week number is calculated from that anchor date.
+// Returns 0 during summer, 1 on first week, etc.
 
-export const INITIAL_ROSTER = [
-  { id: 1,  name: "María González",   avatarInitials: "MG", submitted: true,  reviewed: false, tutorMinutes: 12, tutorMessages: 18, pasteAttempts: 0 },
-  { id: 2,  name: "Carlos Pérez",     avatarInitials: "CP", submitted: true,  reviewed: true,  tutorMinutes: 31, tutorMessages: 24, pasteAttempts: 3 },
-  { id: 3,  name: "Gabriela Torres",  avatarInitials: "GT", submitted: true,  reviewed: false, tutorMinutes: 7,  tutorMessages: 9,  pasteAttempts: 0 },
-  { id: 4,  name: "José Rivera",      avatarInitials: "JR", submitted: false, reviewed: false, tutorMinutes: 0,  tutorMessages: 0,  pasteAttempts: 0 },
-  { id: 5,  name: "Sofía Martínez",   avatarInitials: "SM", submitted: true,  reviewed: false, tutorMinutes: 22, tutorMessages: 19, pasteAttempts: 1 },
-  { id: 6,  name: "Andrés López",     avatarInitials: "AL", submitted: false, reviewed: false, tutorMinutes: 4,  tutorMessages: 6,  pasteAttempts: 7 },
-  { id: 7,  name: "Valeria Cruz",     avatarInitials: "VC", submitted: true,  reviewed: true,  tutorMinutes: 38, tutorMessages: 28, pasteAttempts: 0 },
-  { id: 8,  name: "Miguel Hernández", avatarInitials: "MH", submitted: true,  reviewed: false, tutorMinutes: 15, tutorMessages: 12, pasteAttempts: 2 },
-  { id: 9,  name: "Isabella Díaz",    avatarInitials: "ID", submitted: false, reviewed: false, tutorMinutes: 0,  tutorMessages: 0,  pasteAttempts: 0 },
-  { id: 10, name: "Daniel Morales",   avatarInitials: "DM", submitted: true,  reviewed: false, tutorMinutes: 9,  tutorMessages: 11, pasteAttempts: 0 },
-];
+const SCHOOL_YEAR_START = new Date("2026-08-03"); // First Monday of August 2026
 
-// ── Unit 12.1 — My Journey So Far ────────────────────────────────────────────
-// PR DE Pacing Calendar: Weeks 2–7 (August–September 2026)
-// Essential Questions:
-//   EQ1. How do personal journeys shape society and culture?
-//   EQ2. How are people shaped by their journeys and experiences?
-//   EQ3. How do authors use literal and symbolic journeys to structure stories?
-// Key skills: Reading biographies & personal narratives, writing reflective
-//             narratives, chronological order, flashback/flash-forward.
+export function currentSchoolWeek() {
+  const today   = new Date();
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const diff    = today - SCHOOL_YEAR_START;
+  if (diff < 0) return 0; // summer before school year
+  return Math.floor(diff / msPerWeek) + 1;
+}
 
-export const INITIAL_CONCEPTS = {
-  unit: "Unit 12.1 · Week 1",
-  title: "My Journey So Far",
-  overview:
-    "In this unit we explore personal narratives and biographies — stories of real journeys that shape who we are. Today you will learn the three key literary tools writers use to organize and tell their stories.",
-  keyQuestion:
-    "As you read and write today, ask yourself: How does the author's personal journey shape who they are — and what does your own journey say about you?",
-  concepts: [
-    {
-      term: "Personal Narrative",
-      pronunciation: "/ˈpɜːrsənəl ˈnærətɪv/",
-      color: "#f59e0b",
-      icon: "✍️",
-      definition:
-        "A first-person account of real events from the writer's own life. The writer shares personal experiences, thoughts, and feelings to connect with the reader.",
-      example:
-        '"Last summer, packing everything I owned into two suitcases, I finally understood what my grandmother meant when she said home is not a place — it is the people you carry with you."',
-    },
-    {
-      term: "Chronological Order",
-      pronunciation: "/ˌkrɒnəˈlɒdʒɪkəl ˈɔːrdər/",
-      color: "#22d3ee",
-      icon: "📅",
-      definition:
-        "Organizing events in the sequence they happened in time — from earliest to most recent. This is the most common structure in narratives and helps readers follow the story clearly.",
-      example:
-        '"First, I applied to three universities. Then, I waited for three months. Finally, the acceptance letter arrived on a Tuesday morning I will never forget."',
-    },
-    {
-      term: "Flashback",
-      pronunciation: "/ˈflæʃbæk/",
-      color: "#a78bfa",
-      icon: "⏪",
-      definition:
-        "A narrative technique that interrupts the present story to take the reader back to an earlier event. Authors use flashbacks to explain a character's motivations, reveal backstory, or create emotional depth.",
-      example:
-        '"Standing at the graduation stage, I suddenly remembered being seven years old, telling my father I wanted to be a doctor. His smile that day gave me the courage to keep going."',
-    },
-  ],
+// ── All 6 units — concept data ────────────────────────────────────────────────
+// Each unit covers: unit label, title, overview, keyQuestion, and concept cards.
+// Aligned to the PR DE Pacing Calendar and the official unit guides.
+
+const UNITS_CONCEPTS = {
+
+  // ── Unit 12.1 My Journey So Far ──────────────────────────────────────────
+  // Weeks 2–7 (Aug 10 – Sep 11, 2026)
+  1: {
+    unit: "Unit 12.1 · Weeks 2–7",
+    title: "My Journey So Far",
+    overview:
+      "In this unit we explore personal narratives and biographies — stories of real journeys that shape who we are. You will learn the key literary tools writers use to organize and tell their stories.",
+    keyQuestion:
+      "How does the author's personal journey shape who they are — and what does your own journey say about you?",
+    concepts: [
+      {
+        term: "Personal Narrative",
+        pronunciation: "/ˈpɜːrsənəl ˈnærətɪv/",
+        color: "#f59e0b",
+        icon: "✍️",
+        definition:
+          "A first-person account of real events from the writer's own life. The writer shares personal experiences, thoughts, and feelings to connect with the reader.",
+        example:
+          '"Last summer, packing everything I owned into two suitcases, I finally understood what my grandmother meant when she said home is not a place — it is the people you carry with you."',
+      },
+      {
+        term: "Chronological Order",
+        pronunciation: "/ˌkrɒnəˈlɒdʒɪkəl ˈɔːrdər/",
+        color: "#22d3ee",
+        icon: "📅",
+        definition:
+          "Organizing events in the sequence they happened in time — from earliest to most recent. The most common structure in narratives.",
+        example:
+          '"First, I applied to three universities. Then, I waited for three months. Finally, the acceptance letter arrived on a Tuesday morning I will never forget."',
+      },
+      {
+        term: "Flashback",
+        pronunciation: "/ˈflæʃbæk/",
+        color: "#a78bfa",
+        icon: "⏪",
+        definition:
+          "A narrative technique that interrupts the present story to take the reader back to an earlier event, revealing backstory or emotional depth.",
+        example:
+          '"Standing at the graduation stage, I suddenly remembered being seven years old, telling my father I wanted to be a doctor."',
+      },
+    ],
+  },
+
+  // ── Unit 12.2 Walking into the Future ────────────────────────────────────
+  // Weeks 8–15 (Sep 14 – Oct 30, 2026)
+  2: {
+    unit: "Unit 12.2 · Weeks 8–15",
+    title: "Walking into the Future",
+    overview:
+      "In this unit we explore research writing and career preparation. You will learn how to find reliable sources, construct a well-supported argument, and communicate professionally in spoken and written English.",
+    keyQuestion:
+      "How do the choices you make today shape the future you will walk into?",
+    concepts: [
+      {
+        term: "Research",
+        pronunciation: "/rɪˈsɜːrtʃ/",
+        color: "#f59e0b",
+        icon: "🔍",
+        definition:
+          "The systematic investigation of a topic using credible sources to gather information, analyze it, and draw informed conclusions.",
+        example:
+          '"Before writing my essay, I researched three peer-reviewed articles and two government reports to support my argument about climate policy."',
+      },
+      {
+        term: "Thesis Statement",
+        pronunciation: "/ˈθiːsɪs ˈsteɪtmənt/",
+        color: "#34d399",
+        icon: "📌",
+        definition:
+          "A one or two-sentence statement that clearly expresses the main argument or central point of a paper. It tells the reader what to expect.",
+        example:
+          '"Expanding access to bilingual education in Puerto Rico will improve academic outcomes and preserve cultural identity for future generations."',
+      },
+      {
+        term: "Formal vs. Informal Language",
+        pronunciation: "/ˈfɔːrməl vɜːrsəs ɪnˈfɔːrməl/",
+        color: "#60a5fa",
+        icon: "💬",
+        definition:
+          "Formal language uses complete sentences, standard grammar, and professional vocabulary. Informal language is casual, uses contractions, and is appropriate for friends.",
+        example:
+          'Formal: "I would like to inquire about the position." Informal: "Hey, I wanna know about the job."',
+      },
+    ],
+  },
+
+  // ── Unit 12.3 Poetic Justice ─────────────────────────────────────────────
+  // Weeks 15–20 (Oct 27 – Nov 20, 2026)
+  3: {
+    unit: "Unit 12.3 · Weeks 15–20",
+    title: "Poetic Justice",
+    overview:
+      "In this unit we explore poetry and drama as tools for social expression. You will study Puerto Rican poets and playwrights, analyze how word choice creates meaning, and write and perform your own original poems.",
+    keyQuestion:
+      "How do poetry and drama help us better understand ourselves and the world — and what message do YOU want to send?",
+    concepts: [
+      {
+        term: "Poetic Devices",
+        pronunciation: "/poʊˈɛtɪk dɪˈvaɪsɪz/",
+        color: "#ec4899",
+        icon: "🌸",
+        definition:
+          "Literary tools that poets use to create effect: rhyme, rhythm, metaphor, simile, alliteration, imagery, and personification.",
+        example:
+          '"The road was a ribbon of moonlight" uses metaphor. "The wind whispered" uses personification.',
+      },
+      {
+        term: "Tone and Mood",
+        pronunciation: "/toʊn ænd muːd/",
+        color: "#a78bfa",
+        icon: "🎭",
+        definition:
+          "Tone is the author's attitude toward the subject (e.g., angry, hopeful, ironic). Mood is the feeling the reader experiences while reading the poem or play.",
+        example:
+          '"The tone of Lorca\'s poem is mournful and heavy. The mood it creates in the reader is one of sadness and longing."',
+      },
+      {
+        term: "Social Justice",
+        pronunciation: "/ˈsoʊʃəl ˈdʒʌstɪs/",
+        color: "#f59e0b",
+        icon: "✊",
+        definition:
+          "The fair and equal distribution of opportunities, rights, and resources in society. Many poets and playwrights use their art to advocate for justice.",
+        example:
+          '"Julia de Burgos used poetry as a tool of social justice, challenging gender inequality and colonial oppression in Puerto Rico."',
+      },
+    ],
+  },
+
+  // ── Unit 12.4 Then and Now ───────────────────────────────────────────────
+  // Weeks 24–30 (Jan 4 – Feb 13, 2027)
+  4: {
+    unit: "Unit 12.4 · Weeks 24–30",
+    title: "Then and Now",
+    overview:
+      "In this unit we compare historical and contemporary texts to understand how the world has changed — and what has stayed the same. You will develop skills in critical analysis, debate, and academic writing.",
+    keyQuestion:
+      "How does understanding the past help us make sense of the present and prepare for the future?",
+    concepts: [
+      {
+        term: "Cause and Effect",
+        pronunciation: "/kɔːz ænd ɪˈfɛkt/",
+        color: "#22d3ee",
+        icon: "⛓",
+        definition:
+          "A relationship between events where one event (the cause) makes another event happen (the effect). Signal words include: because, therefore, as a result, consequently.",
+        example:
+          '"Because Puerto Rico was devastated by Hurricane María (cause), thousands of families relocated to the mainland United States (effect)."',
+      },
+      {
+        term: "Historical Context",
+        pronunciation: "/hɪˈstɔːrɪkəl ˈkɒntɛkst/",
+        color: "#f59e0b",
+        icon: "📜",
+        definition:
+          "The social, political, and cultural circumstances in which a text was written. Understanding context helps explain why an author wrote what they did.",
+        example:
+          '"To understand why Albizu Campos wrote this speech, we must understand the historical context of the Puerto Rican independence movement in the 1930s."',
+      },
+      {
+        term: "Debate",
+        pronunciation: "/dɪˈbeɪt/",
+        color: "#34d399",
+        icon: "⚖️",
+        definition:
+          "A structured argument where two sides present opposing viewpoints using evidence and reasoning. Good debaters anticipate and counter the other side's arguments.",
+        example:
+          '"The debate topic was: 'Puerto Rico should become a U.S. state.' Each side used historical evidence, economic data, and cultural arguments."',
+      },
+    ],
+  },
+
+  // ── Unit 12.5 See It My Way ──────────────────────────────────────────────
+  // Weeks 31–36 (Feb 16 – Mar 27, 2027)
+  5: {
+    unit: "Unit 12.5 · Weeks 31–36",
+    title: "See It My Way",
+    overview:
+      "In this unit we master persuasion — how to make others agree with your point of view using language, evidence, and rhetoric. You will write persuasive letters, speeches, and essays about real community issues.",
+    keyQuestion:
+      "What do you believe in strongly enough to defend? How do you convince others to see it your way?",
+    concepts: [
+      {
+        term: "Ethos",
+        pronunciation: "/ˈiːθɒs/",
+        color: "#f59e0b",
+        icon: "🏛️",
+        definition:
+          "An appeal to credibility or character. The speaker convinces the audience by demonstrating expertise, trustworthiness, or authority.",
+        example:
+          '"As a doctor with 20 years of experience, I can tell you that this treatment works." — The speaker uses ethos by citing their expertise.',
+      },
+      {
+        term: "Pathos",
+        pronunciation: "/ˈpeɪθɒs/",
+        color: "#ec4899",
+        icon: "❤️",
+        definition:
+          "An appeal to emotion. The speaker connects with the audience's feelings — fear, hope, sympathy, anger — to make the message resonate.",
+        example:
+          '"Think about the children who go to bed hungry every night. We can change that." — The speaker uses pathos to create empathy.',
+      },
+      {
+        term: "Logos",
+        pronunciation: "/ˈloʊɡɒs/",
+        color: "#22d3ee",
+        icon: "📊",
+        definition:
+          "An appeal to logic and reason. The speaker uses facts, statistics, and structured arguments to build a rational case.",
+        example:
+          '"Studies show that recycling reduces landfill waste by 40%." — The speaker uses logos by citing a statistic.',
+      },
+    ],
+  },
+
+  // ── Unit 12.6 The Long and Short of It ──────────────────────────────────
+  // Weeks 37–42 (Mar 29 – May 8, 2027)
+  6: {
+    unit: "Unit 12.6 · Weeks 37–42",
+    title: "The Long and Short of It",
+    overview:
+      "In this final unit you write an original short story. You will analyze how published authors craft characters, setting, and plot — and apply those techniques in your own creative writing.",
+    keyQuestion:
+      "How do your own experiences, background, and culture inform your creative writing?",
+    concepts: [
+      {
+        term: "Character Development",
+        pronunciation: "/ˈkærɪktər dɪˈvɛləpmənt/",
+        color: "#f59e0b",
+        icon: "🧑‍🎭",
+        definition:
+          "The process by which an author reveals a character's personality, motivations, and growth throughout a story. Well-developed characters feel real and complex.",
+        example:
+          '"At the start of the story, Elena is afraid to speak up. By the end, she gives a speech in front of the entire school. This growth is her character development."',
+      },
+      {
+        term: "Setting",
+        pronunciation: "/ˈsɛtɪŋ/",
+        color: "#34d399",
+        icon: "🌆",
+        definition:
+          "The time and place in which a story occurs. Setting creates atmosphere and can reflect or influence characters' emotions and actions.",
+        example:
+          '"The story is set in old San Juan during a rainstorm. The narrow colonial streets and the sound of rain on the cobblestones make the reader feel isolated and anxious."',
+      },
+      {
+        term: "Plot Structure",
+        pronunciation: "/plɒt ˈstrʌktʃər/",
+        color: "#a78bfa",
+        icon: "📈",
+        definition:
+          "The sequence of events in a story, typically following: exposition → rising action → climax → falling action → resolution.",
+        example:
+          '"In the exposition, we meet Ana in her village. The rising action builds as she discovers the secret. The climax is her confrontation. The resolution shows a changed community."',
+      },
+    ],
+  },
 };
 
-// ── Unit 12.1 flipped classroom materials ────────────────────────────────────
+// ── Get current unit concepts based on school week ───────────────────────────
+// Pacing:
+//   Week 1       → intro (no specific unit yet)
+//   Weeks 2–7    → Unit 12.1
+//   Weeks 8–15   → Unit 12.2
+//   Weeks 16–23  → Unit 12.3 + breaks
+//   Weeks 24–30  → Unit 12.4
+//   Weeks 31–36  → Unit 12.5
+//   Weeks 37–42  → Unit 12.6
+
+export function getCurrentConcepts() {
+  const week = currentSchoolWeek();
+  let unitNumber;
+  if      (week <= 1)  unitNumber = 1;
+  else if (week <= 7)  unitNumber = 1;
+  else if (week <= 15) unitNumber = 2;
+  else if (week <= 23) unitNumber = 3;
+  else if (week <= 30) unitNumber = 4;
+  else if (week <= 36) unitNumber = 5;
+  else                 unitNumber = 6;
+  return UNITS_CONCEPTS[unitNumber];
+}
+
+// Kept for backward compat — now points to auto-selected current unit
+export const INITIAL_CONCEPTS = getCurrentConcepts();
+
+// ── Seed flipped material + assignments ───────────────────────────────────────
+// These are only used as fallback if Supabase has no materials/assignments yet.
 
 export const INITIAL_FLIPPED = [
   {
@@ -171,7 +374,7 @@ export const INITIAL_FLIPPED = [
     unit: "Unit 12.1 · Week 1",
     url: "https://www.youtube.com/embed/5gvFiDxDSBs",
     description:
-      "Watch this video before class. It introduces personal narratives and explains how real writers share their life experiences. Pay attention to the examples given and think about a journey from your own life.",
+      "Watch this video before class. Pay attention to the examples and think about a journey from your own life.",
     publishDate: daysFrom(-1),
     assignmentId: "a1",
   },
@@ -182,57 +385,11 @@ export const INITIAL_FLIPPED = [
     unit: "Unit 12.1 · Week 1",
     url: "https://owl.purdue.edu/owl/general_writing/academic_writing/essay_writing/narrative_essays.html",
     description:
-      "Read this guide on narrative writing. Focus on the section about structure and point of view. Take notes on at least two techniques you want to try in your own writing.",
+      "Read this guide on narrative writing. Focus on structure and point of view.",
     publishDate: daysFrom(-1),
     assignmentId: "a1",
   },
-  {
-    id: "f3",
-    type: "video",
-    title: "Chronological Order vs. Flashback — Literary Techniques",
-    unit: "Unit 12.1 · Week 2",
-    url: "",
-    description:
-      "Watch this video on how authors organize narratives. Compare chronological order and flashback, and find one example of each technique in something you have read recently.",
-    publishDate: daysFrom(3),
-    assignmentId: "a2",
-  },
-  {
-    id: "f4",
-    type: "pdf",
-    title: "excerpt — 'When I Was Puerto Rican' by Esmeralda Santiago",
-    unit: "Unit 12.1 · Week 2",
-    url: "https://drive.google.com/file/d/1IoQq6wWWeJryilLFfRPsQ1gNOj4veaIU/view",
-    description:
-      "Read the assigned pages. As you read, underline at least one example of a flashback and mark any words or phrases that help you understand the sequence of events.",
-    publishDate: daysFrom(3),
-    assignmentId: "a2",
-  },
-  {
-    id: "f5",
-    type: "podcast",
-    title: "Storytelling & Identity — NotebookLM Discussion",
-    unit: "Unit 12.1 · Week 3",
-    url: "",
-    description:
-      "Listen to this podcast about how Puerto Rican writers use personal narrative to explore identity and culture. Listen for how each author's journey shaped their writing voice.",
-    publishDate: daysFrom(8),
-    assignmentId: null,
-  },
-  {
-    id: "f6",
-    type: "video",
-    title: "Writing a Reflective Personal Narrative — Step by Step",
-    unit: "Unit 12.1 · Week 3",
-    url: "",
-    description:
-      "This video walks you through the writing process for a personal narrative: brainstorming, drafting, and revising. Use it as a guide when you begin drafting your own narrative.",
-    publishDate: daysFrom(10),
-    assignmentId: null,
-  },
 ];
-
-// ── Unit 12.1 assignments ─────────────────────────────────────────────────────
 
 export const INITIAL_ASSIGNMENTS = [
   {
@@ -242,100 +399,54 @@ export const INITIAL_ASSIGNMENTS = [
     status: "published",
     flippedId: "f1",
     instructions:
-      "Based on the video and website you reviewed at home, complete the following questions. Use complete sentences and support your answers with specific examples from the material.",
+      "Based on the video and website you reviewed at home, complete the following questions.",
     questions: [
       {
         id: "q1",
         type: "multiple_choice",
-        text: "According to the video, which of the following best describes the main purpose of a personal narrative?",
+        text: "According to the video, which best describes the main purpose of a personal narrative?",
         options: [
           "To inform the reader about a historical event using facts and statistics",
-          "To share a personal experience in a way that connects with the reader's emotions and understanding",
-          "To argue a point of view and persuade the reader to agree with the writer",
-          "To entertain the reader with a fictional story created from imagination",
+          "To share a personal experience in a way that connects with the reader",
+          "To argue a point of view and persuade the reader to agree",
+          "To entertain with a fictional story created from imagination",
         ],
       },
       {
         id: "q2",
         type: "short_answer",
-        text: "In your own words, explain what chronological order is and why writers use it. Give one example of how an author might use chronological order in a personal narrative.",
+        text: "In your own words, explain what chronological order is and why writers use it. Give one example.",
         placeholder: "Write your answer here...",
         minWords: 30,
       },
       {
         id: "q3",
         type: "journal",
-        text: "Think about a personal journey or important experience from your own life — big or small. Describe it briefly and explain how it shaped who you are today. Use the first person (I, me, my) and write with as much detail as you can.",
+        text: "Think about a personal journey or important experience from your own life. Describe it and explain how it shaped who you are today.",
         placeholder: "Write your personal reflection here...",
         minWords: 60,
       },
     ],
   },
-  {
-    id: "a2",
-    title: "Flashback & Chronological Order in Literature",
-    unit: "Unit 12.1 · Week 2",
-    status: "draft",
-    flippedId: "f3",
-    instructions:
-      "Using the excerpt you read at home and the video on literary techniques, answer the following questions about how authors structure narratives.",
-    questions: [
-      {
-        id: "q1",
-        type: "multiple_choice",
-        text: "When an author interrupts the current story to show an earlier event from a character's past, this technique is called:",
-        options: [
-          "Chronological order",
-          "Flashback",
-          "Flash-forward",
-          "Foreshadowing",
-        ],
-      },
-      {
-        id: "q2",
-        type: "short_answer",
-        text: "Find one example of a flashback in the excerpt from 'When I Was Puerto Rican.' Copy the sentence or passage, then explain in your own words what past event the author is describing and why it is important to the story.",
-        placeholder: "Write your answer here...",
-        minWords: 40,
-      },
-      {
-        id: "q3",
-        type: "journal",
-        text: "Esmeralda Santiago writes about her childhood in Puerto Rico as a way to understand her present self. Write a short paragraph using a flashback technique: start in the present moment, then travel back to a memory from your past that explains something about who you are today.",
-        placeholder: "Write your flashback paragraph here...",
-        minWords: 70,
-      },
-    ],
-  },
-  {
-    id: "a3",
-    title: "Building My Journey So Far — Draft Workshop",
-    unit: "Unit 12.1 · Week 3",
-    status: "draft",
-    flippedId: null,
-    instructions:
-      "This is the in-class workshop session for your personal narrative draft. Use the techniques you have practiced this unit.",
-    questions: [],
-  },
 ];
 
 // ── AI tutor system prompt ────────────────────────────────────────────────────
+export const TUTOR_SYSTEM_PROMPT = (currentQuestion) => {
+  const concepts = getCurrentConcepts();
+  return `You are an ESL tutor for a 12th-grade student at Escuela Superior Fernando Suria Chaves in Barceloneta, Puerto Rico.
 
-export const TUTOR_SYSTEM_PROMPT = (currentQuestion) =>
-  `You are an ESL tutor for a 12th-grade student at Escuela Superior Fernando Suria Chaves in Barceloneta, Puerto Rico. The class is currently studying Unit 12.1: "My Journey So Far" — a unit focused on personal narratives, biographies, chronological order, and flashback techniques.
+Current unit: ${concepts.title} — ${concepts.unit}
+Unit focus: ${concepts.overview}
 
-CURRENT QUESTION THE STUDENT IS WORKING ON:
-"${currentQuestion?.text || "General help with the assignment"}"
+CURRENT QUESTION: "${currentQuestion?.text || "General help"}"
 
-YOUR RULES:
-1. NEVER give the direct answer or write sentences the student can copy into their response.
-2. Use the Socratic method — ask guiding questions to help them think through the answer themselves.
-3. If the student is stuck, give a hint or example that points them in the right direction without completing the thought for them.
-4. Give specific, constructive feedback: praise what they did well, identify what needs improvement, suggest how to improve it.
-5. Help with vocabulary and grammar when needed, but always in service of helping them express their own ideas better.
+RULES:
+1. NEVER give the direct answer or write sentences the student can copy.
+2. Use the Socratic method — ask guiding questions.
+3. Give hints that point them in the right direction without completing their thought.
+4. Give specific feedback: praise strengths, guide improvement.
+5. Help with vocabulary and grammar in service of their own ideas.
 
-LANGUAGE: Default to English. If the student writes in Spanish or asks to switch, respond in Spanish. Mixing languages (Spanglish) is fine and normal.
-
-TONE: Warm, encouraging, patient, and supportive — like a knowledgeable friend who wants them to succeed. Never make them feel bad for not knowing something.
-
-GOAL: Help them think, not think for them.`;
+LANGUAGE: Default English. Switch to Spanish if student writes in Spanish or asks. Spanglish is fine.
+TONE: Warm, encouraging, patient — like a knowledgeable friend who wants them to succeed.`;
+};

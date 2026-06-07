@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabaseClient";
-import { INITIAL_ROSTER } from "./data/mockData";
+// INITIAL_ROSTER removed — roster now comes from Supabase
 import LoginScreen from "./components/LoginScreen";
 import GroupSelectScreen from "./components/GroupSelectScreen";
 import StudentPortal from "./components/student/HomeView";
@@ -55,21 +55,47 @@ export default function App() {
   const [currentUser,   setCurrentUser]   = useState(null);
   const [authLoading,   setAuthLoading]   = useState(true);
   const [dataLoading,   setDataLoading]   = useState(true);
-  const [needsGroup,    setNeedsGroup]    = useState(false);  // student missing group_number
+  const [needsGroup,    setNeedsGroup]    = useState(false);
   const [flippedItems,  setFlippedItems]  = useState([]);
   const [assignments,   setAssignments]   = useState([]);
-  const [roster,        setRoster]        = useState(INITIAL_ROSTER);
+  const [roster,        setRoster]        = useState([]);
 
-  // Fetch assignments and materials from Supabase
+  // Fetch assignments, materials, and roster from Supabase
   const fetchData = useCallback(async () => {
     setDataLoading(true);
     try {
-      const [{ data: materialsData }, { data: assignmentsData }] = await Promise.all([
+      const [
+        { data: materialsData },
+        { data: assignmentsData },
+        { data: studentsData },
+      ] = await Promise.all([
         supabase.from("materials").select("*").order("publish_date", { ascending: true }),
         supabase.from("assignments").select("*").order("created_at", { ascending: true }),
+        supabase
+          .from("profiles")
+          .select(`
+            id, full_name, avatar_initials, email, group_number,
+            student_responses(id, submitted_at, paste_attempts, tabaway_count)
+          `)
+          .eq("role", "student")
+          .order("group_number", { ascending: true }),
       ]);
+
       setFlippedItems((materialsData || []).map(fromMaterialRow));
       setAssignments((assignmentsData || []).map(fromAssignmentRow));
+      setRoster((studentsData || []).map((s) => ({
+        id:             s.id,
+        name:           s.full_name || s.email,
+        avatarInitials: s.avatar_initials || (s.email?.slice(0, 2).toUpperCase()),
+        email:          s.email,
+        group:          s.group_number,
+        submitted:      (s.student_responses?.length ?? 0) > 0,
+        reviewed:       false,
+        pasteAttempts:  s.student_responses?.reduce((sum, r) => sum + (r.paste_attempts ?? 0), 0) ?? 0,
+        tabawayCount:   s.student_responses?.reduce((sum, r) => sum + (r.tabaway_count ?? 0), 0) ?? 0,
+        tutorMinutes:   0,
+        tutorMessages:  0,
+      })));
     } catch (err) {
       console.error("fetchData error:", err);
     } finally {
@@ -149,7 +175,6 @@ export default function App() {
         flippedItems={flippedItems}
         assignments={assignments}
         roster={roster}
-        setRoster={setRoster}
         onRefresh={fetchData}
         dataLoading={dataLoading}
       />

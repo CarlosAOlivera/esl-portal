@@ -13,7 +13,7 @@ import {
   FONT_SANS,
   FONT_SERIF,
 } from "../../styles/tokens";
-import { todayStr, INITIAL_CONCEPTS } from "../../data/mockData";
+import { todayStr, getCurrentConcepts } from "../../data/mockData";
 import { useSchoolHours } from "../../hooks/useSchoolHours";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import ContentViewer from "../shared/ContentViewer";
@@ -502,7 +502,7 @@ export default function StudentPortal({ user, onLogout, flippedItems, assignment
         {currentView === "intro" && (
           <IntroView
             onContinue={() => setCurrentView("home")}
-            concepts={INITIAL_CONCEPTS}
+            concepts={getCurrentConcepts()}
           />
         )}
         {currentView === "home" && (
