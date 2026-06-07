@@ -54,15 +54,15 @@ function mdToHtml(md) {
 /* ── JSON plan parser ──────────────────────────────────────────────────────── */
 function parsePlan(content) {
   if (!content) return null;
+  // Most robust: find the outermost { ... } and parse it
+  // This handles: bare JSON, ```json...```, extra text around the JSON
+  const start = content.indexOf("{");
+  const end   = content.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) return null;
   try {
-    // Try ```json ... ``` fence
-    const fence = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (fence) return JSON.parse(fence[1].trim());
-    // Try bare JSON with "days" key (whole string or a substring)
-    const bare = content.match(/\{[\s\S]*?"days"[\s\S]*\}/);
-    if (bare) return JSON.parse(bare[0]);
-    // Try parsing the whole thing
-    return JSON.parse(content.trim());
+    const parsed = JSON.parse(content.slice(start, end + 1));
+    // Only treat as a valid plan if it has the "days" key
+    if (parsed && typeof parsed.days === "object") return parsed;
   } catch {}
   return null;
 }
