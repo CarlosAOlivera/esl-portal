@@ -2,9 +2,6 @@
 // Curriculum content aligned to PR Department of Education Grade 12 ESL
 // Pacing Calendar 2026–2027.
 
-// ── Feature flags ─────────────────────────────────────────────────────────────
-export const DEMO_MODE = true;
-
 // ── Date utilities ────────────────────────────────────────────────────────────
 export const todayStr = () => new Date().toISOString().slice(0, 10);
 
@@ -360,76 +357,6 @@ export function getCurrentConcepts() {
   return UNITS_CONCEPTS[unitNumber];
 }
 
-// Kept for backward compat — now points to auto-selected current unit
-export const INITIAL_CONCEPTS = getCurrentConcepts();
-
-// ── Seed flipped material + assignments ───────────────────────────────────────
-// These are only used as fallback if Supabase has no materials/assignments yet.
-
-export const INITIAL_FLIPPED = [
-  {
-    id: "f1",
-    type: "video",
-    title: "What Is a Personal Narrative? — Introduction",
-    unit: "Unit 12.1 · Week 1",
-    url: "https://www.youtube.com/embed/5gvFiDxDSBs",
-    description:
-      "Watch this video before class. Pay attention to the examples and think about a journey from your own life.",
-    publishDate: daysFrom(-1),
-    assignmentId: "a1",
-  },
-  {
-    id: "f2",
-    type: "website",
-    title: "Purdue OWL — Narrative Essays",
-    unit: "Unit 12.1 · Week 1",
-    url: "https://owl.purdue.edu/owl/general_writing/academic_writing/essay_writing/narrative_essays.html",
-    description:
-      "Read this guide on narrative writing. Focus on structure and point of view.",
-    publishDate: daysFrom(-1),
-    assignmentId: "a1",
-  },
-];
-
-export const INITIAL_ASSIGNMENTS = [
-  {
-    id: "a1",
-    title: "Narrative Foundations — What Makes a Story",
-    unit: "Unit 12.1 · Week 1",
-    status: "published",
-    flippedId: "f1",
-    instructions:
-      "Based on the video and website you reviewed at home, complete the following questions.",
-    questions: [
-      {
-        id: "q1",
-        type: "multiple_choice",
-        text: "According to the video, which best describes the main purpose of a personal narrative?",
-        options: [
-          "To inform the reader about a historical event using facts and statistics",
-          "To share a personal experience in a way that connects with the reader",
-          "To argue a point of view and persuade the reader to agree",
-          "To entertain with a fictional story created from imagination",
-        ],
-      },
-      {
-        id: "q2",
-        type: "short_answer",
-        text: "In your own words, explain what chronological order is and why writers use it. Give one example.",
-        placeholder: "Write your answer here...",
-        minWords: 30,
-      },
-      {
-        id: "q3",
-        type: "journal",
-        text: "Think about a personal journey or important experience from your own life. Describe it and explain how it shaped who you are today.",
-        placeholder: "Write your personal reflection here...",
-        minWords: 60,
-      },
-    ],
-  },
-];
-
 // ── AI tutor system prompt ────────────────────────────────────────────────────
 export const TUTOR_SYSTEM_PROMPT = (currentQuestion) => {
   const concepts = getCurrentConcepts();
@@ -450,3 +377,4 @@ RULES:
 LANGUAGE: Default English. Switch to Spanish if student writes in Spanish or asks. Spanglish is fine.
 TONE: Warm, encouraging, patient — like a knowledgeable friend who wants them to succeed.`;
 };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  

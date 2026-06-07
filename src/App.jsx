@@ -65,37 +65,53 @@ export default function App() {
     setDataLoading(true);
     try {
       const [
-        { data: materialsData },
-        { data: assignmentsData },
-        { data: studentsData },
+        { data: materialsData,   error: matErr },
+        { data: assignmentsData, error: asgErr },
+        { data: studentsData,    error: stuErr },
+        { data: responsesData,   error: resErr },
       ] = await Promise.all([
         supabase.from("materials").select("*").order("publish_date", { ascending: true }),
         supabase.from("assignments").select("*").order("created_at", { ascending: true }),
         supabase
           .from("profiles")
-          .select(`
-            id, full_name, avatar_initials, email, group_number,
-            student_responses(id, submitted_at, paste_attempts, tabaway_count)
-          `)
+          .select("id, full_name, avatar_initials, email, group_number")
           .eq("role", "student")
           .order("group_number", { ascending: true }),
+        supabase
+          .from("student_responses")
+          .select("student_id, id, submitted_at, paste_attempts, tabaway_count"),
       ]);
+
+      if (matErr) console.error("Materials fetch error:", matErr);
+      if (asgErr) console.error("Assignments fetch error:", asgErr);
+      if (stuErr) console.error("Roster fetch error:", stuErr);
+      if (resErr) console.error("Responses fetch error:", resErr);
+
+      // Group responses by student for fast lookup
+      const byStudent = {};
+      (responsesData || []).forEach((r) => {
+        if (!byStudent[r.student_id]) byStudent[r.student_id] = [];
+        byStudent[r.student_id].push(r);
+      });
 
       setFlippedItems((materialsData || []).map(fromMaterialRow));
       setAssignments((assignmentsData || []).map(fromAssignmentRow));
-      setRoster((studentsData || []).map((s) => ({
-        id:             s.id,
-        name:           s.full_name || s.email,
-        avatarInitials: s.avatar_initials || (s.email?.slice(0, 2).toUpperCase()),
-        email:          s.email,
-        group:          s.group_number,
-        submitted:      (s.student_responses?.length ?? 0) > 0,
-        reviewed:       false,
-        pasteAttempts:  s.student_responses?.reduce((sum, r) => sum + (r.paste_attempts ?? 0), 0) ?? 0,
-        tabawayCount:   s.student_responses?.reduce((sum, r) => sum + (r.tabaway_count ?? 0), 0) ?? 0,
-        tutorMinutes:   0,
-        tutorMessages:  0,
-      })));
+      setRoster((studentsData || []).map((s) => {
+        const responses = byStudent[s.id] || [];
+        return {
+          id:             s.id,
+          name:           s.full_name || s.email,
+          avatarInitials: s.avatar_initials || s.email?.slice(0, 2).toUpperCase(),
+          email:          s.email,
+          group:          s.group_number,
+          submitted:      responses.length > 0,
+          reviewed:       false,
+          pasteAttempts:  responses.reduce((sum, r) => sum + (r.paste_attempts ?? 0), 0),
+          tabawayCount:   responses.reduce((sum, r) => sum + (r.tabaway_count ?? 0), 0),
+          tutorMinutes:   0,
+          tutorMessages:  0,
+        };
+      }));
     } catch (err) {
       console.error("fetchData error:", err);
     } finally {
@@ -158,36 +174,4 @@ export default function App() {
   }
 
   // Student needs to pick a group on first login
-  if (currentUser.role === "student" && needsGroup) {
-    return (
-      <GroupSelectScreen
-        user={currentUser}
-        onGroupSelected={() => setNeedsGroup(false)}
-      />
-    );
-  }
-
-  if (currentUser.role === "teacher") {
-    return (
-      <TeacherPortal
-        user={currentUser}
-        onLogout={handleLogout}
-        flippedItems={flippedItems}
-        assignments={assignments}
-        roster={roster}
-        onRefresh={fetchData}
-        dataLoading={dataLoading}
-      />
-    );
-  }
-
-  return (
-    <StudentPortal
-      user={currentUser}
-      onLogout={handleLogout}
-      flippedItems={flippedItems}
-      assignments={assignments}
-      dataLoading={dataLoading}
-    />
-  );
-}
+  if (curren
