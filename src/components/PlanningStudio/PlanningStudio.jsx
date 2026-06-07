@@ -81,7 +81,48 @@ export default function PlanningStudio({ user }) {
       .map((c) => `• ${c.term}: ${c.definition}`)
       .join("\n");
 
-    const prompt = `You are an expert ESL curriculum designer working with Prof. Carlos Olivera at Escuela Superior Fernando Suria Chaves, Barceloneta, Puerto Rico. Generate a ${selectedDocType} for Grade 12 ESL students aligned to the PR Department of Education Pacing Calendar.
+    // Lesson Plan → structured JSON for DE weekly format; all other types → free-form
+    const prompt = selectedDocType === "Lesson Plan"
+      ? `You are an expert ESL curriculum designer for Prof. Carlos Olivera, Grade 12 ESL, Escuela Superior Fernando Suria Chaves, Barceloneta, Puerto Rico.
+
+Generate a WEEKLY LESSON PLAN following the PR Department of Education "English 12 Weekly Plan (Regular Teacher)" format (Mon–Fri).
+
+UNIT: ${selectedUnit.unit} — ${selectedUnit.title}
+OVERVIEW: ${selectedUnit.overview}
+KEY QUESTION: ${selectedUnit.keyQuestion}
+KEY VOCABULARY & CONCEPTS:
+${unitConceptList}
+
+SKILL FOCUS: ${selectedSkill}
+PROFICIENCY LEVEL: ${selectedProficiency}
+${freeContext ? `TEACHER NOTES: ${freeContext}` : ""}
+
+Output ONLY a valid JSON object — no text before or after, no markdown code fences. Use exactly this structure:
+{
+  "week": "e.g. 12.1.1",
+  "theme": "Weekly theme title aligned to the unit",
+  "transversalThemes": ["Equity and Respect among All Human Beings"],
+  "generatorThemes": ["Diversity", "Ethical Coexistence"],
+  "days": {
+    "Monday": {
+      "standards": "PR-DE standards codes (e.g. 12.LS.1.1, 12.W.8.1)",
+      "indicators": "indicator codes (e.g. 12.LS.1.1b)",
+      "objectives": ["Students will be able to identify...", "Students will be able to..."],
+      "initial": ["1. Warm-up or opening activity", "2. Follow-up step"],
+      "developing": ["1. Main instructional activity", "2. Student practice step"],
+      "closing": ["1. Closing reflection or exit activity"],
+      "integration": "N/A",
+      "evaluation": "Formative",
+      "accommodations": "Extended time; visual supports",
+      "materials": ["PowerPoint presentation", "projector", "whiteboard", "textbook"]
+    },
+    "Tuesday": {},
+    "Wednesday": {},
+    "Thursday": {},
+    "Friday": {}
+  }
+}`
+      : `You are an expert ESL curriculum designer working with Prof. Carlos Olivera at Escuela Superior Fernando Suria Chaves, Barceloneta, Puerto Rico. Generate a ${selectedDocType} for Grade 12 ESL students aligned to the PR Department of Education Pacing Calendar.
 
 UNIT: ${selectedUnit.unit} — ${selectedUnit.title}
 OVERVIEW: ${selectedUnit.overview}
