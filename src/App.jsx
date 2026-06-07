@@ -174,4 +174,36 @@ export default function App() {
   }
 
   // Student needs to pick a group on first login
-  if (curren
+  if (currentUser.role === "student" && needsGroup) {
+    return (
+      <GroupSelectScreen
+        user={currentUser}
+        onGroupSelected={() => setNeedsGroup(false)}
+      />
+    );
+  }
+
+  if (currentUser.role === "teacher") {
+    return (
+      <TeacherPortal
+        user={currentUser}
+        onLogout={handleLogout}
+        flippedItems={flippedItems}
+        assignments={assignments}
+        roster={roster}
+        onRefresh={fetchData}
+        dataLoading={dataLoading}
+      />
+    );
+  }
+
+  return (
+    <StudentPortal
+      user={currentUser}
+      onLogout={handleLogout}
+      flippedItems={flippedItems}
+      assignments={assignments}
+      dataLoading={dataLoading}
+    />
+  );
+}
