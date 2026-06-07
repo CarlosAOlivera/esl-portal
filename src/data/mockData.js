@@ -242,7 +242,7 @@ const UNITS_CONCEPTS = {
         definition:
           "A structured argument where two sides present opposing viewpoints using evidence and reasoning. Good debaters anticipate and counter the other side's arguments.",
         example:
-          '"The debate topic was: 'Puerto Rico should become a U.S. state.' Each side used historical evidence, economic data, and cultural arguments."',
+          `"The debate topic was: 'Puerto Rico should become a U.S. state.' Each side used historical evidence, economic data, and cultural arguments."`,
       },
     ],
   },
