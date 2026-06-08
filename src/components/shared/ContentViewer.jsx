@@ -61,6 +61,10 @@ export default function ContentViewer({ item }) {
   }
 
   if (item.type === "podcast") {
+    // Direct audio files can be played inline; web page links (NotebookLM, shorturls) must open in new tab
+    const isDirectAudio = /\.(mp3|wav|ogg|m4a|opus|flac|aac)(\?|$)/i.test(item.url || "");
+    const isNotebookLM  = /notebooklm\.google\.com/i.test(item.url || "");
+
     return (
       <div
         style={{
@@ -101,7 +105,7 @@ export default function ContentViewer({ item }) {
                 fontFamily: FONT_SANS,
               }}
             >
-              NotebookLM Podcast
+              {isNotebookLM ? "NotebookLM Podcast" : "Podcast"}
             </div>
             <div
               style={{
@@ -114,19 +118,53 @@ export default function ContentViewer({ item }) {
             </div>
           </div>
         </div>
-        <audio controls style={{ width: "100%", accentColor: "#22d3ee" }}>
-          <source src={item.url} />
-          Your browser does not support audio.
-        </audio>
+
+        {isDirectAudio ? (
+          <audio controls style={{ width: "100%", accentColor: "#22d3ee" }}>
+            <source src={item.url} />
+            Your browser does not support audio.
+          </audio>
+        ) : (
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              padding: "14px 20px",
+              borderRadius: 10,
+              background: "linear-gradient(135deg, rgba(34,211,238,0.2), rgba(34,211,238,0.1))",
+              border: "1px solid rgba(34,211,238,0.35)",
+              color: "#22d3ee",
+              fontWeight: 600,
+              fontSize: 14,
+              fontFamily: FONT_SANS,
+              textDecoration: "none",
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ fontSize: 18 }}>▶</span>
+            {isNotebookLM ? "Listen in NotebookLM ↗" : "Open Podcast ↗"}
+          </a>
+        )}
+
         <p
           style={{
             color: "rgba(148,163,184,0.5)",
             fontSize: 11,
-            margin: "8px 0 0",
+            margin: "10px 0 0",
             fontFamily: FONT_SANS,
           }}
         >
           💡 Use headphones and take notes as you listen.
+          {!isDirectAudio && (
+            <span style={{ display: "block", marginTop: 4, color: "rgba(148,163,184,0.35)" }}>
+              Opens in a new tab — come back here when done.
+            </span>
+          )}
         </p>
       </div>
     );
