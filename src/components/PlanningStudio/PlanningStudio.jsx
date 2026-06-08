@@ -56,7 +56,7 @@ function LabeledField({ label, children }) {
   );
 }
 
-export default function PlanningStudio({ user }) {
+export default function PlanningStudio({ user, flippedItems = [], assignments = [] }) {
   const [selectedUnit, setSelectedUnit]           = useState(null); // full unit object from UNITS_CONCEPTS
   const [selectedSkill, setSelectedSkill]         = useState("");
   const [selectedDocType, setSelectedDocType]     = useState("");
@@ -81,21 +81,60 @@ export default function PlanningStudio({ user }) {
       .map((c) => `• ${c.term}: ${c.definition}`)
       .join("\n");
 
+    // Build context from real app data — flipped materials and assignments for this unit
+    const unitKey = selectedUnit.unit; // e.g. "Unit 12.1 · Weeks 2–7"
+    const unitFlipped = flippedItems.filter(
+      (m) => !m.unit || m.unit === unitKey || m.title?.toLowerCase().includes("12.1")
+    );
+    const unitAssignments = assignments.filter(
+      (a) => !a.unit || a.unit === unitKey || a.unit?.includes("12.1")
+    );
+
+    // Summarize flip materials for the prompt
+    const flipContext = unitFlipped.length > 0
+      ? unitFlipped.map((m) => `• [${m.type?.toUpperCase() || "MATERIAL"}] "${m.title}" — ${m.description || "flipped pre-class material"}`).join("\n")
+      : "• No flipped materials assigned yet for this unit.";
+
+    // Summarize assignments (one per day ideally) for developing/closing/evaluation
+    const assignmentContext = unitAssignments.length > 0
+      ? unitAssignments.map((a, i) => {
+          const qs = (a.questions || []).map((q, qi) =>
+            `    Q${qi + 1} [${q.type}]: ${q.text}`
+          ).join("\n");
+          return `• Assignment ${i + 1}: "${a.title}" (${a.status})\n${qs}`;
+        }).join("\n")
+      : "• No assignments created yet for this unit. Generate realistic class activities using the ESL Portal app (students complete MC, short answer, and journal questions on their devices during class).";
+
     // Lesson Plan → structured JSON for DE weekly format; all other types → free-form
     const prompt = selectedDocType === "Lesson Plan"
       ? `You are an expert ESL curriculum designer for Prof. Carlos Olivera, Grade 12 ESL, Escuela Superior Fernando Suria Chaves, Barceloneta, Puerto Rico.
+
+This is a FLIPPED CLASSROOM. Students review assigned pre-class material (video/audio/reading) at HOME before each class. During class they complete activities using an ESL web app on their devices where they answer Multiple Choice, Short Answer, and Journal/Reflection questions.
 
 Generate a WEEKLY LESSON PLAN following the PR Department of Education "English 12 Weekly Plan (Regular Teacher)" format (Mon–Fri).
 
 UNIT: ${selectedUnit.unit} — ${selectedUnit.title}
 OVERVIEW: ${selectedUnit.overview}
 KEY QUESTION: ${selectedUnit.keyQuestion}
-KEY VOCABULARY & CONCEPTS:
+KEY VOCABULARY & CONCEPTS (from PR-DE pacing calendar seed):
 ${unitConceptList}
+
+FLIPPED PRE-CLASS MATERIALS (students reviewed these at home before coming to class):
+${flipContext}
+
+IN-CLASS APP ASSIGNMENTS (students complete these ON THEIR DEVICES during class — these are the actual "Developing" tasks):
+${assignmentContext}
 
 SKILL FOCUS: ${selectedSkill}
 PROFICIENCY LEVEL: ${selectedProficiency}
 ${freeContext ? `TEACHER NOTES: ${freeContext}` : ""}
+
+STRUCTURE EACH DAY AS FOLLOWS:
+- initial: Start with a brief warm-up (2–3 min) that combines reviewing the key vocabulary/concepts from the seed WITH a brief check-in on the flipped pre-class material the student watched/read at home (e.g., "Yesterday you watched a video about X — who can tell me one thing they learned?"). Include teacher facilitation steps. Use the ESL Portal app (projector) to show the flipped material if needed.
+- developing: The main in-class activity IS the ESL Portal app assignment. Describe step-by-step how the teacher facilitates while students work on their devices answering the assignment questions (MC, short answer, journal). Reference the specific assignment title and question types listed above. Distribute the assignments across Mon–Fri; if there are fewer assignments than days, fill remaining days with vocabulary practice or peer discussion tied to the unit concepts.
+- closing: Brief exit activity (3–5 min) tied directly to what students completed in the app — e.g., pair-share an answer, quick class discussion of a reflection question, or teacher collects a notable response to share.
+- evaluation: List the specific tasks completed that day (e.g., "Formative — ESL Portal: [Assignment Title] — MC Q1–Q3, Short Answer Q4; Exit ticket: pair-share reflection").
+- materials: Include "ESL Portal app (student devices)", "Projector (teacher display)", and the specific flipped material title if used that day. Add standard materials as needed.
 
 Output ONLY a valid JSON object — no text before or after, no markdown code fences. Use exactly this structure:
 {
@@ -107,14 +146,14 @@ Output ONLY a valid JSON object — no text before or after, no markdown code fe
     "Monday": {
       "standards": "PR-DE standards codes (e.g. 12.LS.1.1, 12.W.8.1)",
       "indicators": "indicator codes (e.g. 12.LS.1.1b)",
-      "objectives": ["Students will be able to identify...", "Students will be able to..."],
-      "initial": ["1. Warm-up or opening activity", "2. Follow-up step"],
-      "developing": ["1. Main instructional activity", "2. Student practice step"],
-      "closing": ["1. Closing reflection or exit activity"],
+      "objectives": ["Students will be able to..."],
+      "initial": ["1. Warm-up step referencing flipped material", "2. Vocabulary check step"],
+      "developing": ["1. Teacher launches ESL Portal assignment on projector", "2. Students open app on devices and complete [assignment title]", "3. Teacher circulates and supports"],
+      "closing": ["1. Specific exit activity tied to the day's app assignment"],
       "integration": "N/A",
-      "evaluation": "Formative",
-      "accommodations": "Extended time; visual supports",
-      "materials": ["PowerPoint presentation", "projector", "whiteboard", "textbook"]
+      "evaluation": "Formative — ESL Portal: [Assignment Title] — [question types]; Exit ticket",
+      "accommodations": "Extended time; read-aloud support; visual vocabulary anchor chart",
+      "materials": ["ESL Portal app (student devices)", "Projector (teacher display)", "Whiteboard", "PowerPoint"]
     },
     "Tuesday": {},
     "Wednesday": {},
