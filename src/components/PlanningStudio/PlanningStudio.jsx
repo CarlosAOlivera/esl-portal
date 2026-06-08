@@ -82,13 +82,16 @@ export default function PlanningStudio({ user, flippedItems = [], assignments = 
       .join("\n");
 
     // Build context from real app data — flipped materials and assignments for this unit
-    const unitKey = selectedUnit.unit; // e.g. "Unit 12.1 · Weeks 2–7"
-    const unitFlipped = flippedItems.filter(
-      (m) => !m.unit || m.unit === unitKey || m.title?.toLowerCase().includes("12.1")
-    );
-    const unitAssignments = assignments.filter(
-      (a) => !a.unit || a.unit === unitKey || a.unit?.includes("12.1")
-    );
+    // Extract short unit id (e.g. "12.1") from "Unit 12.1 · Weeks 2–7" for fuzzy matching
+    const unitShort = (selectedUnit.unit.match(/\d+\.\d+/) || [])[0] || "";
+    const matchesUnit = (val) =>
+      !val ||
+      val.includes(unitShort) ||
+      selectedUnit.unit.includes(val) ||
+      val.includes(selectedUnit.unit);
+
+    const unitFlipped     = flippedItems.filter((m) => matchesUnit(m.unit));
+    const unitAssignments = assignments.filter((a) => matchesUnit(a.unit));
 
     // Summarize flip materials for the prompt
     const flipContext = unitFlipped.length > 0
