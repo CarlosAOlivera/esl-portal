@@ -208,6 +208,14 @@ ${mdToHtml(doc.content)}
 </html>`;
 }
 
+/* ── Detect truncated/unparseable JSON ─────────────────────────────────────── */
+function looksLikeJson(content) {
+  if (!content) return false;
+  const trimmed = content.trim();
+  // Starts with optional backtick fence and then a {
+  return /^`*\s*j?s?o?n?\s*\{/i.test(trimmed) || trimmed.startsWith("{");
+}
+
 /* ── Print handler ──────────────────────────────────────────────────────────── */
 function openPrint(doc, plan) {
   const html = plan ? buildDEHtml(doc, plan) : buildGenericHtml(doc);
@@ -462,6 +470,25 @@ export default function DocumentPreview({ document, onClose }) {
       >
         {plan ? (
           <DETable plan={plan} />
+        ) : looksLikeJson(document.content) ? (
+          /* JSON was generated but truncated — can't parse */
+          <div
+            style={{
+              padding: "28px 24px",
+              textAlign: "center",
+              background: "rgba(248,113,113,0.07)",
+              border: "1px solid rgba(248,113,113,0.2)",
+              borderRadius: 10,
+            }}
+          >
+            <div style={{ fontSize: 22, marginBottom: 10 }}>⚠️</div>
+            <div style={{ color: "#f87171", fontWeight: 700, fontSize: 14, fontFamily: FONT_SANS, marginBottom: 6 }}>
+              El plan fue truncado
+            </div>
+            <div style={{ color: "rgba(148,163,184,0.7)", fontSize: 13, fontFamily: FONT_SANS }}>
+              El JSON quedó incompleto por límite de tokens. Haz clic en ← Back y genera de nuevo.
+            </div>
+          </div>
         ) : (
           <div
             className="ps-content"

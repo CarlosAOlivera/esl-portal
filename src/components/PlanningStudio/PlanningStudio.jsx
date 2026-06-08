@@ -143,7 +143,7 @@ Generate a complete, classroom-ready ${selectedDocType}. Reference the unit's ke
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-6",
-          max_tokens: 4000,
+          max_tokens: selectedDocType === "Lesson Plan" ? 8000 : 4000,
           messages: [{ role: "user", content: prompt }],
         }),
       });
