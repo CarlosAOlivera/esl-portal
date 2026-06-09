@@ -8,10 +8,12 @@ import { useState, useEffect } from "react";
 
 export function useSchoolHours() {
   const checkCurrentTime = () => {
-    if (import.meta.env.DEV) return true;
-    const now = new Date();
-    const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes();
-    return minutesSinceMidnight >= 450 && minutesSinceMidnight <= 870;
+    // TODO: re-enable time gating before August 2026 go-live
+    // if (import.meta.env.DEV) return true;
+    // const now = new Date();
+    // const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes();
+    // return minutesSinceMidnight >= 450 && minutesSinceMidnight <= 870;
+    return true; // temporarily disabled for testing
   };
 
   const [isSchoolHours, setIsSchoolHours] = useState(checkCurrentTime);
