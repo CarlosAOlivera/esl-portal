@@ -169,8 +169,8 @@ export default function LoginScreen({ onLogin }) {
         }}
       >
         {/* Logo */}
-        <div style={{ margin: "0 auto 24px" }}>
-          <img src={elevateLogoFull} alt="Project ELEVATE" style={{ height: 64, width: "auto" }} />
+        <div style={{ margin: "0 auto 24px", textAlign: "center" }}>
+          <img src={elevateLogoFull} alt="Project ELEVATE" style={{ height: 64, width: "auto", display: "inline-block" }} />
         </div>
 
         <div

@@ -64,7 +64,7 @@ function StudentHeader({ user, currentView, setView, onAvatarClick }) {
           <img
             src={isMobile ? elevateIcon : elevateLogoFull}
             alt="ELEVATE"
-            style={{ height: isMobile ? 30 : 36, width: "auto" }}
+            style={{ height: isMobile ? 30 : 44, width: "auto" }}
           />
         </div>
 
