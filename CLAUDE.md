@@ -294,3 +294,55 @@ Main agent → reads this file and current server.js + useTutor.js
 - **App goes live:** August 2026 (first day of school year 2026–2027)
 - **Target users:** ~30 Grade 12 ESL students + 1 teacher
 - **Scale plan:** After piloting at Fernando Suria Chaves, expand to other PR schools and eventually districts in FL, TX, NY, CA with high ELL populations
+
+---
+
+## Brand Identity — Project ELEVATE
+
+### Visual identity
+
+- **Wordmark:** "ELEVATE" in bold white sans-serif. The letter **A** is replaced by a stylized mountain peak.
+- **Icon mark (app icon / favicon):** the mountain-peak "A" in isolation, no text. Used for small-format placements.
+- **Signature details:**
+  - A 4-point gold/yellow star sits at the apex of the peak (achievement, AI "spark").
+  - A small light-blue diamond sits at the base of the peak (interior negative space).
+- **Tagline:** `LEARN • GROW • ACHIEVE` (small caps, tracked out, used under the wordmark).
+
+### Color tokens
+
+| Token | Role | Approx. value |
+|---|---|---|
+| `--navy-deep` | App/page background | near-black navy |
+| `--navy` | Panel / card background | deep navy blue |
+| `--blue-bright` | Primary accent, CTAs | saturated blue |
+| `--blue-light` | Secondary accent, highlights | bright sky blue |
+| `--gold` | Achievement accents, stars, badges | warm gold/yellow |
+| `--ink` | Primary text on dark backgrounds | near-white |
+| `--ink-dim` | Secondary/muted text | soft blue-gray |
+
+The peak/icon and most brand elements use a **blue gradient** (`--blue-light` → `--blue-bright`); gold is reserved for accents that signal achievement or highlight (the star, badges, the "PRACTICE" mode pill).
+
+### Usage notes
+
+- Full wordmark + tagline → teacher-facing surfaces (Planning Studio header, login screen, printed/PDF exports, syllabus materials).
+- Icon-only mark → favicon, app icon, anywhere space is tight.
+- Keep the institutional brand (ELEVATE) visually separate from Eli (see below) — Eli is a feature-level persona, not a brand replacement.
+
+---
+
+## AI Tutor Persona — "Eli"
+
+Eli is the dedicated avatar/persona for the **AI Tutor feature inside the student-facing portal only**. It is not the project mascot and does not appear in teacher-facing surfaces or institutional materials.
+
+- **Design:** white-and-blue 3D robot character, friendly rounded features, glowing blue "screen" eyes, small cape detail, a heart icon on one hand, an "E" marking on the ear/side panel.
+- **Purpose:** lowers the affective barrier for 12th-grade ESL students practicing English with an AI — friendlier and less intimidating than a generic chatbot, while the surrounding UI stays visually mature (dark navy + blue/gold ELEVATE palette) so the experience doesn't read as a "kids' app."
+- **UI pattern (see reference mockup):**
+  - Eli's avatar appears in a small circular frame with a conic blue/gold gradient ring, in the tutor header and next to each of Eli's chat bubbles.
+  - Eli's messages use a dark navy bubble with a subtle blue border.
+  - Student messages use a solid navy bubble, right-aligned.
+  - A distinct **"GUIDED MODE" bubble style** (gold-tinted border/background, small gold tag label) is used whenever Eli redirects a student away from a direct-answer request — this is the visual signal for the anti-cheating/guardrail behavior already defined for the tutor (Eli asks a guiding question instead of giving the answer).
+  - A three-dot typing indicator (animated, blue dots) appears next to Eli's avatar while a response is generating.
+  - Input bar: rounded pill input + circular gradient send button, consistent with the blue brand gradient.
+- **Tone of voice:** warm, encouraging, conversational English; never gives direct answers to assessed questions; always responds with a guiding question or hint when a student asks for "the answer."
+
+**Reference asset:** `eli_tutor_mockup.html` (chat UI mockup demonstrating header, message bubbles, guided-mode response, typing state, and input bar) — use as the visual reference when building the real AI Tutor component.

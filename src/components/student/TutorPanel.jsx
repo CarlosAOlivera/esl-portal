@@ -7,6 +7,34 @@
 import { useRef, useEffect } from "react";
 import { FONT_SANS } from "../../styles/tokens";
 import { useTutor, TUTOR_MAX_SECONDS } from "../../hooks/useTutor";
+import eliAvatar from "../../assets/branding/eli-tutor-avatar.png";
+
+function EliAvatar({ size = 28 }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: "conic-gradient(from 0deg, #E8A020, #3b82f6, #60a5fa, #3b82f6, #E8A020)",
+        padding: 2,
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: "50%",
+          overflow: "hidden",
+          background: "#080F1E",
+        }}
+      >
+        <img src={eliAvatar} alt="Eli" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+    </div>
+  );
+}
 
 export default function TutorPanel({ activeQuestionIndex, questions, onClose }) {
   const {
@@ -50,20 +78,7 @@ export default function TutorPanel({ activeQuestionIndex, questions, onClose }) 
           gap: 10,
         }}
       >
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 9,
-            background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 15,
-          }}
-        >
-          🤖
-        </div>
+        <EliAvatar size={36} />
         <div style={{ flex: 1 }}>
           <div
             style={{
@@ -73,7 +88,7 @@ export default function TutorPanel({ activeQuestionIndex, questions, onClose }) 
               fontFamily: FONT_SANS,
             }}
           >
-            AI Tutor
+            Eli
           </div>
           <div
             style={{
@@ -99,7 +114,7 @@ export default function TutorPanel({ activeQuestionIndex, questions, onClose }) 
               style={{
                 height: "100%",
                 width: `${Math.max(0, (secondsRemaining / TUTOR_MAX_SECONDS) * 100)}%`,
-                background: secondsRemaining < 300 ? "#ef4444" : "#6366f1",
+                background: secondsRemaining < 300 ? "#ef4444" : "#3b82f6",
                 borderRadius: 2,
                 transition: "width 1s",
               }}
@@ -157,57 +172,77 @@ export default function TutorPanel({ activeQuestionIndex, questions, onClose }) 
           gap: 8,
         }}
       >
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              justifyContent: message.role === "user" ? "flex-end" : "flex-start",
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "87%",
-                padding: "8px 12px",
-                borderRadius:
-                  message.role === "user"
-                    ? "12px 12px 3px 12px"
-                    : "12px 12px 12px 3px",
-                background:
-                  message.role === "user"
-                    ? "linear-gradient(135deg,#3b82f6,#6366f1)"
-                    : "rgba(255,255,255,0.06)",
-                border:
-                  message.role === "assistant"
-                    ? "1px solid rgba(255,255,255,0.08)"
-                    : "none",
-                color: "#fff",
-                fontSize: 13,
-                lineHeight: 1.6,
-                fontFamily: FONT_SANS,
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {message.content}
+        {messages.map((message, index) =>
+          message.role === "user" ? (
+            <div key={index} style={{ display: "flex", justifyContent: "flex-end" }}>
+              <div
+                style={{
+                  maxWidth: "82%",
+                  padding: "8px 12px",
+                  borderRadius: "12px 12px 3px 12px",
+                  background: "rgba(17,32,64,0.95)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "#e2e8f0",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  fontFamily: FONT_SANS,
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {message.content}
+              </div>
             </div>
-          </div>
-        ))}
+          ) : (
+            <div key={index} style={{ display: "flex", alignItems: "flex-end", gap: 6 }}>
+              <EliAvatar size={24} />
+              <div
+                style={{
+                  maxWidth: "80%",
+                  padding: "8px 12px",
+                  borderRadius: "12px 12px 12px 3px",
+                  background: "rgba(11,22,46,0.95)",
+                  border: "1px solid rgba(59,130,246,0.22)",
+                  color: "#fff",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  fontFamily: FONT_SANS,
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {message.content}
+              </div>
+            </div>
+          )
+        )}
 
         {/* Typing indicator */}
         {isLoading && (
-          <div style={{ display: "flex", gap: 5 }}>
-            {[0, 1, 2].map((dotIndex) => (
-              <div
-                key={dotIndex}
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "#6366f1",
-                  animation: `bounce 1.2s ease-in-out ${dotIndex * 0.2}s infinite`,
-                }}
-              />
-            ))}
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 6 }}>
+            <EliAvatar size={24} />
+            <div
+              style={{
+                padding: "10px 14px",
+                borderRadius: "12px 12px 12px 3px",
+                background: "rgba(11,22,46,0.95)",
+                border: "1px solid rgba(59,130,246,0.22)",
+                display: "flex",
+                gap: 5,
+                alignItems: "center",
+              }}
+            >
+              {[0, 1, 2].map((dotIndex) => (
+                <div
+                  key={dotIndex}
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#3b82f6",
+                    animation: `bounce 1.2s ease-in-out ${dotIndex * 0.2}s infinite`,
+                  }}
+                />
+              ))}
+            </div>
           </div>
         )}
 
@@ -272,7 +307,7 @@ export default function TutorPanel({ activeQuestionIndex, questions, onClose }) 
                 border: "none",
                 background:
                   inputText.trim() && !isLoading
-                    ? "linear-gradient(135deg,#6366f1,#8b5cf6)"
+                    ? "linear-gradient(135deg,#3b82f6,#60a5fa)"
                     : "rgba(255,255,255,0.06)",
                 color: "#fff",
                 cursor:
