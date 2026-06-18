@@ -13,8 +13,8 @@ import {
   FONT_SANS,
   FONT_SERIF,
 } from "../../styles/tokens";
-import elevateIcon from "../../assets/branding/elevate-icon.png";
-import elevateLogoFull from "../../assets/branding/elevate-logo-full.png";
+import elevateIcon from "../../assets/branding/elevate-icon-NB.png";
+import elevateLogoFull from "../../assets/branding/elevate-solo-logo-full-NB.png";
 import { todayStr, getCurrentConcepts } from "../../data/mockData";
 import { useSchoolHours } from "../../hooks/useSchoolHours";
 import { useIsMobile } from "../../hooks/useIsMobile";

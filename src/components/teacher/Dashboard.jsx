@@ -12,7 +12,7 @@ import {
   FONT_SANS,
   FONT_SERIF,
 } from "../../styles/tokens";
-import elevateIcon from "../../assets/branding/elevate-icon.png";
+import elevateIcon from "../../assets/branding/elevate-icon-NB.png";
 import { fmtDate, daysUntil, flippedStat } from "../../data/mockData";
 import Stat from "../shared/Stat";
 import FlippedMgr from "./FlippedMgr";

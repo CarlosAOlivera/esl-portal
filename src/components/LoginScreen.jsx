@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { BACKGROUND_GRADIENT, CARD_STYLE, FONT_SANS, FONT_SERIF } from "../styles/tokens";
-import elevateLogoFull from "../assets/branding/elevate-logo-full.png";
+import elevateLogoFull from "../assets/branding/elevate-logo-full-NB.png";
 
 const FALLBACK_PIN   = "2026";
 const CLASS_CODE     = "SURIA2026";
