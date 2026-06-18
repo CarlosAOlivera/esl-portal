@@ -267,20 +267,48 @@ node server.js
 
 ## Multi-Agent Workflow (Claude Code)
 
-When tackling large tasks, use sub-agents as follows:
+Four specialized agents live in `.claude/agents/`. Always start with `lead-agent` for any non-trivial feature or fix.
 
-**For Priority 4 (Supabase data wiring):**
+| Agent | File | Responsibility |
+|---|---|---|
+| `lead-agent` | `.claude/agents/lead-agent.md` | Coordinates the team, writes `TASKS.md`, blocks deploys on QA failure |
+| `backend-agent` | `.claude/agents/backend-agent.md` | Supabase schema, RLS, migrations, Vercel serverless functions |
+| `frontend-agent` | `.claude/agents/frontend-agent.md` | React components, hooks, design system, role gating |
+| `qa-agent` | `.claude/agents/qa-agent.md` | Vitest + RTL tests in `/tests/`; reports failures before deploy |
+
+### Standard cycle
+
 ```
-Main agent → reads this file and current AssignmentView + Responses components
-  └─ Sub-agent A: wires Submit button in AssignmentView.jsx to student_responses
-  └─ Sub-agent B: wires Responses.jsx to read from Supabase
+lead-agent   → analyzes request → writes tasks to TASKS.md
+                ├─ backend-agent  → publishes API contract → implements
+                ├─ frontend-agent → waits for contract → builds UI
+                └─ qa-agent       → runs tests → blocks deploy on failure → reports to responsible agent
+lead-agent   → reviews outputs → closes cycle
 ```
 
-**For Priority 5 (Vercel deployment):**
+### How to invoke
+
+```bash
+# Start any new feature here:
+claude --agent lead-agent "describe the feature or bug"
+
+# Or target a specific agent when the task is already scoped:
+claude --agent backend-agent  "TASK-NNN: ..."
+claude --agent frontend-agent "TASK-NNN: ..."
+claude --agent qa-agent       "TASK-NNN: write and run tests for ..."
 ```
-Main agent → reads this file and current server.js + useTutor.js
-  └─ Sub-agent A: creates api/anthropic.js serverless function + vercel.json
-  └─ Sub-agent B: updates fetch URLs in useTutor.js and PlanningStudio.jsx
+
+### Shared task file
+
+`TASKS.md` (repo root) is the source of truth for task status. Every agent reads and updates it. Format:
+
+```
+## [TASK-NNN] Title
+- **Agent**: backend | frontend | qa
+- **Status**: pending | in-progress | done | blocked
+- **Description**: ...
+- **Acceptance criteria**: ...
+- **Depends on**: TASK-NNN (if any)
 ```
 
 ---
