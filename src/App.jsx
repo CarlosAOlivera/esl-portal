@@ -5,6 +5,7 @@ import LoginScreen from "./components/LoginScreen";
 import GroupSelectScreen from "./components/GroupSelectScreen";
 import StudentPortal from "./components/student/HomeView";
 import TeacherPortal from "./components/teacher/Dashboard";
+import SplashScreen from "./components/SplashScreen";
 
 const TEACHER_EMAIL = "de142118@miescuela.pr";
 
@@ -52,6 +53,7 @@ function userFromSession(session) {
 // ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [showSplash,    setShowSplash]    = useState(() => !sessionStorage.getItem("splashSeen"));
   const [currentUser,   setCurrentUser]   = useState(null);
   const [authLoading,   setAuthLoading]   = useState(true);
   const [dataLoading,   setDataLoading]   = useState(true);
@@ -166,6 +168,17 @@ export default function App() {
     setCurrentUser(null);
     setNeedsGroup(false);
   };
+
+  if (showSplash) {
+    return (
+      <SplashScreen
+        onDone={() => {
+          sessionStorage.setItem("splashSeen", "1");
+          setShowSplash(false);
+        }}
+      />
+    );
+  }
 
   if (authLoading) return null;
 
