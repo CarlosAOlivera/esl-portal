@@ -14,6 +14,7 @@ import {
   FONT_SERIF,
 } from "../../styles/tokens";
 import elevateIcon from "../../assets/branding/elevate-icon.png";
+import elevateLogoFull from "../../assets/branding/elevate-logo-full.png";
 import { todayStr, getCurrentConcepts } from "../../data/mockData";
 import { useSchoolHours } from "../../hooks/useSchoolHours";
 import { useIsMobile } from "../../hooks/useIsMobile";
@@ -60,7 +61,11 @@ function StudentHeader({ user, currentView, setView, onAvatarClick }) {
       >
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center" }}>
-          <img src={elevateIcon} alt="ELEVATE" style={{ height: 30, width: "auto" }} />
+          <img
+            src={isMobile ? elevateIcon : elevateLogoFull}
+            alt="ELEVATE"
+            style={{ height: isMobile ? 30 : 36, width: "auto" }}
+          />
         </div>
 
         {isMobile ? (

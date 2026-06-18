@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { BACKGROUND_GRADIENT, CARD_STYLE, FONT_SANS, FONT_SERIF } from "../styles/tokens";
+import elevateLogoFull from "../assets/branding/elevate-logo-full.png";
 
 const FALLBACK_PIN   = "2026";
 const CLASS_CODE     = "SURIA2026";
@@ -168,21 +169,8 @@ export default function LoginScreen({ onLogin }) {
         }}
       >
         {/* Logo */}
-        <div
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 14,
-            background: "linear-gradient(135deg,#3b82f6,#6366f1)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 20px",
-            fontSize: 26,
-            boxShadow: "0 8px 28px rgba(59,130,246,0.4)",
-          }}
-        >
-          📚
+        <div style={{ margin: "0 auto 24px" }}>
+          <img src={elevateLogoFull} alt="Project ELEVATE" style={{ height: 64, width: "auto" }} />
         </div>
 
         <div
