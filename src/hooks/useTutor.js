@@ -17,7 +17,7 @@ export function useTutor(activeQuestionIndex, questions) {
     {
       role: "assistant",
       content:
-        "Hi! I'm your ESL tutor. I'll help you think through the questions — but I won't give you the answers directly. Ask me anything! 😊\n\n(Si prefieres español, solo dímelo.)",
+        "Hi! I'm Eli, your ESL tutor. I'll help you think through the questions — but I won't give you the answers directly. Ask me anything! 😊\n\n(Si prefieres español, solo dímelo.)",
     },
   ]);
   const [inputText, setInputText]           = useState("");
