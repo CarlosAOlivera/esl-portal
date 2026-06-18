@@ -12,7 +12,7 @@ import {
   FONT_SANS,
   FONT_SERIF,
 } from "../../styles/tokens";
-import elevateIcon from "../../assets/branding/elevate-icon-NB.png";
+import elevateLogoFull from "../../assets/branding/elevate-solo-logo-full-NB.png";
 import { fmtDate, daysUntil, flippedStat } from "../../data/mockData";
 import Stat from "../shared/Stat";
 import FlippedMgr from "./FlippedMgr";
@@ -60,7 +60,7 @@ function TeacherHeader({ user, currentView, setView, onAvatarClick, isMobile }) 
       >
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src={elevateIcon} alt="ELEVATE" style={{ height: 30, width: "auto" }} />
+          <img src={elevateLogoFull} alt="ELEVATE" style={{ height: 38, width: "auto" }} />
           <span
             style={{
               background: "rgba(99,102,241,0.2)", color: "#a78bfa",
