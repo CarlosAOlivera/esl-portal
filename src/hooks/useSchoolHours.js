@@ -1,21 +1,26 @@
 // useSchoolHours — returns true while the portal is within school hours.
-// School hours are 7:30am–2:30pm (minutes 450–870 since midnight) in PR time.
-// In development (Vite DEV mode) it always returns true so you can test any time.
+// School hours are 7:30am–2:30pm (minutes 450–870 since midnight) in PR time (UTC-4).
+// In development (import.meta.env.DEV) it always returns true so you can test any time.
 // The hook re-checks every 60 seconds, so the UI responds if the session
 // crosses a boundary without a page reload.
 
 import { useState, useEffect } from "react";
 
-export function useSchoolHours() {
-  const checkCurrentTime = () => {
-    // TODO: re-enable time gating before August 2026 go-live
-    // if (import.meta.env.DEV) return true;
-    // const now = new Date();
-    // const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes();
-    // return minutesSinceMidnight >= 450 && minutesSinceMidnight <= 870;
-    return true; // temporarily disabled for testing
-  };
+function checkCurrentTime() {
+  // Always open in dev; enforce hours only in production
+  if (import.meta.env.DEV) return true;
 
+  // Puerto Rico is UTC-4 (no DST)
+  const now = new Date();
+  const prHour   = (now.getUTCHours() - 4 + 24) % 24;
+  const prMinute = now.getUTCMinutes();
+  const minutes  = prHour * 60 + prMinute;
+
+  // 7:30 AM (450) – 2:30 PM (870)
+  return minutes >= 450 && minutes <= 870;
+}
+
+export function useSchoolHours() {
   const [isSchoolHours, setIsSchoolHours] = useState(checkCurrentTime);
 
   useEffect(() => {

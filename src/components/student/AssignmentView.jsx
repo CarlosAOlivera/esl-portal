@@ -337,6 +337,7 @@ export default function AssignmentView({ assignment }) {
 
         <div style={{ padding: "17px 19px" }}>
           <p
+            className="assignment-question-text"
             style={{
               color: "#e2e8f0",
               fontSize: 14,

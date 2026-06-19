@@ -1,44 +1,71 @@
 // Responses — teacher view of submitted student work.
 // Fetches all student_responses from Supabase, joined with profiles for names/initials.
-// The teacher can mark individual responses as reviewed (local state).
+// The teacher can mark individual responses as reviewed; state is persisted to Supabase.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CARD_STYLE, FONT_SANS, FONT_SERIF } from "../../styles/tokens";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function Responses({ assignments = [] }) {
   const [responses, setResponses] = useState([]);
-  const [reviewed, setReviewed]   = useState({});
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState(null);
-  const [groupFilter, setGroupFilter] = useState("all"); // "all" | "1"–"5"
+  const [groupFilter, setGroupFilter] = useState("all");
+  const [togglingId, setTogglingId]   = useState(null); // optimistic lock per row
 
-  useEffect(() => {
-    async function fetchResponses() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("student_responses")
-        .select("*, profiles(full_name, avatar_initials, group_number)")
-        .order("submitted_at", { ascending: false });
+  const fetchResponses = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("student_responses")
+      .select("*, profiles(full_name, avatar_initials, group_number)")
+      .order("submitted_at", { ascending: false });
 
-      if (error) {
-        console.error("Failed to load responses:", error);
-        setError("Could not load responses. Please refresh.");
-      } else {
-        setResponses(data || []);
-      }
-      setLoading(false);
+    if (error) {
+      console.error("Failed to load responses:", error);
+      setError("Could not load responses. Please refresh.");
+    } else {
+      setResponses(data || []);
     }
-
-    fetchResponses();
+    setLoading(false);
   }, []);
+
+  useEffect(() => { fetchResponses(); }, [fetchResponses]);
+
+  const toggleReviewed = async (response) => {
+    if (togglingId === response.id) return;
+    const newValue = !response.reviewed;
+    setTogglingId(response.id);
+
+    // Optimistic update
+    setResponses((prev) =>
+      prev.map((r) =>
+        r.id === response.id
+          ? { ...r, reviewed: newValue, reviewed_at: newValue ? new Date().toISOString() : null }
+          : r
+      )
+    );
+
+    const { error } = await supabase
+      .from("student_responses")
+      .update({
+        reviewed:    newValue,
+        reviewed_at: newValue ? new Date().toISOString() : null,
+      })
+      .eq("id", response.id);
+
+    if (error) {
+      console.error("Failed to update reviewed:", error);
+      // Roll back
+      setResponses((prev) =>
+        prev.map((r) => (r.id === response.id ? { ...r, reviewed: response.reviewed } : r))
+      );
+    }
+    setTogglingId(null);
+  };
 
   const visibleResponses = groupFilter === "all"
     ? responses
     : responses.filter((r) => String(r.profiles?.group_number) === groupFilter);
-
-  const toggleReviewed = (id) =>
-    setReviewed((prev) => ({ ...prev, [id]: !prev[id] }));
 
   if (loading) {
     return (
@@ -69,256 +96,164 @@ export default function Responses({ assignments = [] }) {
           fontSize: 14,
         }}
       >
-        ⚠️ {error}
+        {error}
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 820, margin: "0 auto", padding: "28px 20px" }}>
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <h2 style={{ color: "#fff", fontSize: 20, margin: "0 0 3px", fontFamily: FONT_SERIF }}>
-              Class Responses
-            </h2>
-            <p style={{ color: "rgba(148,163,184,0.5)", fontSize: 13, margin: 0, fontFamily: FONT_SANS }}>
-              {visibleResponses.length} submitted · {Object.values(reviewed).filter(Boolean).length} reviewed
-            </p>
-          </div>
-
-          {/* Group filter */}
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            {["all", "1", "2", "3", "4", "5"].map((g) => (
-              <button
-                key={g}
-                onClick={() => setGroupFilter(g)}
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: 20,
-                  border: groupFilter === g ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.1)",
-                  background: groupFilter === g ? "rgba(99,102,241,0.2)" : "transparent",
-                  color: groupFilter === g ? "#a78bfa" : "rgba(148,163,184,0.55)",
-                  fontSize: 11,
-                  fontWeight: groupFilter === g ? 700 : 400,
-                  cursor: "pointer",
-                  fontFamily: FONT_SANS,
-                }}
-              >
-                {g === "all" ? "All groups" : `Group ${g}`}
-              </button>
-            ))}
-          </div>
-        </div>
+    <div style={{ maxWidth: 820, margin: "0 auto", padding: "22px 20px 48px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        <h2 style={{ color: "#fff", fontFamily: FONT_SERIF, fontSize: 20, margin: 0 }}>
+          Student Responses
+        </h2>
+        <span
+          style={{
+            background: "rgba(59,130,246,0.13)",
+            color: "#60a5fa",
+            fontSize: 12,
+            fontWeight: 600,
+            padding: "3px 10px",
+            borderRadius: 20,
+            fontFamily: FONT_SANS,
+          }}
+        >
+          {responses.length} submitted
+        </span>
+        <div style={{ flex: 1 }} />
+        {/* Group filter */}
+        <select
+          value={groupFilter}
+          onChange={(e) => setGroupFilter(e.target.value)}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 8,
+            color: "#e2e8f0",
+            fontSize: 13,
+            padding: "6px 10px",
+            fontFamily: FONT_SANS,
+            cursor: "pointer",
+          }}
+        >
+          <option value="all">All groups</option>
+          {[1, 2, 3, 4, 5].map((g) => (
+            <option key={g} value={String(g)}>Group {g}</option>
+          ))}
+        </select>
+        <button
+          onClick={fetchResponses}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 8,
+            color: "rgba(148,163,184,0.7)",
+            fontSize: 12,
+            padding: "6px 12px",
+            fontFamily: FONT_SANS,
+            cursor: "pointer",
+          }}
+        >
+          ↻ Refresh
+        </button>
       </div>
 
-      {visibleResponses.length === 0 && (
+      {visibleResponses.length === 0 ? (
         <div
           style={{
             ...CARD_STYLE,
-            padding: "48px 32px",
+            padding: "40px 20px",
             textAlign: "center",
             color: "rgba(148,163,184,0.45)",
             fontFamily: FONT_SANS,
             fontSize: 14,
           }}
         >
-          No submissions yet.
+          No responses yet.
         </div>
-      )}
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {visibleResponses.map((response) => {
-          const profile      = response.profiles || {};
-          const name         = profile.full_name || "Unknown Student";
-          const initials     = profile.avatar_initials || "??";
-          const groupNum     = profile.group_number;
-          const isReviewed   = !!reviewed[response.id];
-          const answers      = response.answers || {};
-          const answerKeys   = Object.keys(answers);
-          const assignment   = assignments.find((a) => a.id === response.assignment_id);
-          const submittedAt  = response.submitted_at
-            ? new Date(response.submitted_at).toLocaleString("en-US")
-            : "";
-
-          return (
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {visibleResponses.map((r) => (
             <div
-              key={response.id}
+              key={r.id}
               style={{
                 ...CARD_STYLE,
-                overflow: "hidden",
+                padding: "14px 18px",
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                borderColor: r.reviewed ? "rgba(52,211,153,0.2)" : undefined,
+                background: r.reviewed ? "rgba(52,211,153,0.04)" : undefined,
               }}
             >
-              {/* Student header row */}
+              {/* Avatar */}
               <div
                 style={{
-                  padding: "12px 19px",
-                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg,#3b82f6,#6366f1)",
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
+                  justifyContent: "center",
+                  color: "#fff",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  fontFamily: FONT_SANS,
+                  flexShrink: 0,
                 }}
               >
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg,#3b82f6,#6366f1)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#fff",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    flexShrink: 0,
-                    fontFamily: FONT_SANS,
-                  }}
-                >
-                  {initials}
-                </div>
+                {r.profiles?.avatar_initials || "??"}
+              </div>
 
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ color: "#fff", fontSize: 13, fontWeight: 600, fontFamily: FONT_SANS }}>
-                      {name}
+              {/* Name + meta */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: "#e2e8f0", fontWeight: 600, fontFamily: FONT_SANS, fontSize: 14 }}>
+                  {r.profiles?.full_name || "Unknown student"}
+                </div>
+                <div style={{ color: "rgba(148,163,184,0.5)", fontSize: 12, fontFamily: FONT_SANS, marginTop: 2 }}>
+                  Group {r.profiles?.group_number ?? "—"} ·{" "}
+                  {new Date(r.submitted_at).toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })}
+                  {r.paste_attempts > 0 && (
+                    <span style={{ color: "#f87171", marginLeft: 8 }}>
+                      ⚠ {r.paste_attempts} paste attempt{r.paste_attempts !== 1 ? "s" : ""}
                     </span>
-                    {groupNum && (
-                      <span style={{ background: "rgba(99,102,241,0.18)", color: "#a78bfa", fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 20, letterSpacing: "0.06em", fontFamily: FONT_SANS }}>
-                        GRP {groupNum}
-                      </span>
-                    )}
-                  </div>
-                  {submittedAt && (
-                    <div
-                      style={{
-                        color: "rgba(148,163,184,0.4)",
-                        fontSize: 11,
-                        marginTop: 2,
-                        fontFamily: FONT_SANS,
-                      }}
-                    >
-                      Submitted {submittedAt}
-                    </div>
+                  )}
+                  {r.tabaway_count > 0 && (
+                    <span style={{ color: "#fbbf24", marginLeft: 8 }}>
+                      ↗ {r.tabaway_count} tab-away{r.tabaway_count !== 1 ? "s" : ""}
+                    </span>
                   )}
                 </div>
-
-                <button
-                  onClick={() => toggleReviewed(response.id)}
-                  style={{
-                    padding: "5px 12px",
-                    borderRadius: 8,
-                    border: isReviewed
-                      ? "1px solid rgba(52,211,153,0.3)"
-                      : "1px solid rgba(255,255,255,0.12)",
-                    background: isReviewed
-                      ? "rgba(52,211,153,0.12)"
-                      : "transparent",
-                    color: isReviewed
-                      ? "#34d399"
-                      : "rgba(148,163,184,0.6)",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: FONT_SANS,
-                    flexShrink: 0,
-                  }}
-                >
-                  {isReviewed ? "✓ Reviewed" : "Mark as reviewed"}
-                </button>
               </div>
 
-              {/* Answers */}
-              <div
+              {/* Reviewed toggle */}
+              <button
+                onClick={() => toggleReviewed(r)}
+                disabled={togglingId === r.id}
                 style={{
-                  padding: "13px 19px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  border: r.reviewed
+                    ? "1px solid rgba(52,211,153,0.35)"
+                    : "1px solid rgba(255,255,255,0.1)",
+                  background: r.reviewed ? "rgba(52,211,153,0.1)" : "rgba(255,255,255,0.04)",
+                  color: r.reviewed ? "#34d399" : "rgba(148,163,184,0.5)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: togglingId === r.id ? "wait" : "pointer",
+                  fontFamily: FONT_SANS,
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                 }}
               >
-                {answerKeys.length === 0 && (
-                  <div
-                    style={{
-                      color: "rgba(148,163,184,0.35)",
-                      fontSize: 12,
-                      fontFamily: FONT_SANS,
-                    }}
-                  >
-                    No answers recorded.
-                  </div>
-                )}
-                {answerKeys.map((questionId, index) => {
-                  const value    = answers[questionId];
-                  const question = assignment?.questions?.find((q) => q.id === questionId);
-                  const isMC     = typeof value === "number";
-                  const letter   = isMC ? String.fromCharCode(65 + value) : null;
-
-                  // Grading for MC: only if correctIndex is explicitly set
-                  const hasKey   = isMC && question?.correctIndex != null;
-                  const isCorrect = hasKey && value === question.correctIndex;
-                  const isWrong   = hasKey && value !== question.correctIndex;
-
-                  const display = value === null
-                    ? "(no answer)"
-                    : isMC
-                    ? `Option ${letter} — ${question?.options?.[value] || ""}`
-                    : value || "(empty)";
-
-                  return (
-                    <div key={questionId}>
-                      <div
-                        style={{
-                          color: "rgba(148,163,184,0.45)",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                          marginBottom: 4,
-                          fontFamily: FONT_SANS,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                        }}
-                      >
-                        Question {index + 1}
-                        {isCorrect && <span style={{ color: "#34d399", fontSize: 11 }}>✓ Correct</span>}
-                        {isWrong   && (
-                          <span style={{ color: "#f87171", fontSize: 11 }}>
-                            ✗ Wrong — correct: Option {String.fromCharCode(65 + question.correctIndex)}
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        style={{
-                          color: isCorrect ? "#34d399" : isWrong ? "#f87171" : "#cbd5e1",
-                          fontSize: 13,
-                          lineHeight: 1.65,
-                          fontFamily: FONT_SANS,
-                          background: isCorrect
-                            ? "rgba(52,211,153,0.07)"
-                            : isWrong
-                            ? "rgba(248,113,113,0.07)"
-                            : "rgba(255,255,255,0.03)",
-                          borderRadius: 8,
-                          padding: "9px 12px",
-                          border: isCorrect
-                            ? "1px solid rgba(52,211,153,0.2)"
-                            : isWrong
-                            ? "1px solid rgba(248,113,113,0.2)"
-                            : "1px solid rgba(255,255,255,0.06)",
-                        }}
-                      >
-                        {display}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                {r.reviewed ? "✓ Reviewed" : "Mark reviewed"}
+              </button>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

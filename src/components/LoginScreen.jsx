@@ -3,15 +3,6 @@ import { supabase } from "../lib/supabaseClient";
 import { BACKGROUND_GRADIENT, CARD_STYLE, FONT_SANS, FONT_SERIF } from "../styles/tokens";
 import elevateLogoFull from "../assets/branding/elevate-logo-full-NB.png";
 
-const FALLBACK_PIN   = "2026";
-const CLASS_CODE     = "SURIA2026";
-const FALLBACK_USER  = {
-  name: "Prof. Carlos Olivera",
-  email: "de142118@miescuela.pr",
-  avatarInitials: "CO",
-  role: "teacher",
-};
-
 function getInitials(name) {
   return name
     .trim()
@@ -39,11 +30,6 @@ export default function LoginScreen({ onLogin }) {
   const [regError, setRegError]           = useState(null);
   const [regSuccess, setRegSuccess]       = useState(false);
 
-  // Fallback teacher PIN
-  const [showFallback, setShowFallback] = useState(false);
-  const [pinInput, setPinInput]         = useState("");
-  const [pinError, setPinError]         = useState(null);
-
   const handleSignIn = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -68,7 +54,8 @@ export default function LoginScreen({ onLogin }) {
     e.preventDefault();
     setRegError(null);
 
-    if (classCode.trim().toUpperCase() !== CLASS_CODE) {
+    // Validate class code server-side via Supabase RPC (or simple check)
+    if (classCode.trim().toUpperCase() !== import.meta.env.VITE_CLASS_CODE) {
       setRegError("Incorrect class code. Ask your teacher for the code.");
       return;
     }
@@ -98,14 +85,6 @@ export default function LoginScreen({ onLogin }) {
       setRegError("Cannot reach the server. Check your connection and try again.");
     } finally {
       setIsRegistering(false);
-    }
-  };
-
-  const handlePinLogin = () => {
-    if (pinInput === FALLBACK_PIN) {
-      onLogin(FALLBACK_USER);
-    } else {
-      setPinError("Incorrect PIN.");
     }
   };
 
@@ -465,117 +444,6 @@ export default function LoginScreen({ onLogin }) {
           >
             You need the class code from Prof. Olivera to register.
           </p>
-        )}
-
-        {/* Teacher fallback */}
-        {mode === "signin" && (
-          <>
-            <button
-              onClick={() => setShowFallback((v) => !v)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "rgba(99,102,241,0.6)",
-                fontSize: 12,
-                cursor: "pointer",
-                marginTop: 16,
-                fontFamily: FONT_SANS,
-                textDecoration: "underline",
-                padding: 0,
-              }}
-            >
-              Teacher fallback login →
-            </button>
-
-            {showFallback && (
-              <div
-                style={{
-                  border: "1px solid rgba(99,102,241,0.2)",
-                  borderRadius: 12,
-                  padding: 16,
-                  marginTop: 16,
-                  textAlign: "left",
-                }}
-              >
-                <p
-                  style={{
-                    color: "rgba(99,102,241,0.7)",
-                    fontSize: 11,
-                    margin: "0 0 12px",
-                    fontFamily: FONT_SANS,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.1em",
-                  }}
-                >
-                  Teacher Demo Login
-                </p>
-
-                <input
-                  type="email"
-                  value="de142118@miescuela.pr"
-                  readOnly
-                  style={{
-                    width: "100%",
-                    padding: "9px 12px",
-                    borderRadius: 8,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    background: "rgba(255,255,255,0.03)",
-                    color: "rgba(148,163,184,0.5)",
-                    fontSize: 13,
-                    fontFamily: FONT_SANS,
-                    marginBottom: 8,
-                    boxSizing: "border-box",
-                    cursor: "not-allowed",
-                  }}
-                />
-
-                <div style={{ display: "flex", gap: 8 }}>
-                  <input
-                    type="password"
-                    placeholder="PIN"
-                    value={pinInput}
-                    onChange={(e) => { setPinInput(e.target.value); setPinError(null); }}
-                    onKeyDown={(e) => { if (e.key === "Enter") handlePinLogin(); }}
-                    style={{
-                      flex: 1,
-                      padding: "9px 12px",
-                      borderRadius: 8,
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      background: "rgba(255,255,255,0.05)",
-                      color: "#fff",
-                      fontSize: 13,
-                      fontFamily: FONT_SANS,
-                      outline: "none",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                  <button
-                    onClick={handlePinLogin}
-                    style={{
-                      padding: "9px 18px",
-                      borderRadius: 8,
-                      border: "none",
-                      background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-                      color: "#fff",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      fontFamily: FONT_SANS,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Enter
-                  </button>
-                </div>
-
-                {pinError && (
-                  <p style={{ color: "#f87171", fontSize: 12, margin: "8px 0 0", fontFamily: FONT_SANS }}>
-                    {pinError}
-                  </p>
-                )}
-              </div>
-            )}
-          </>
         )}
       </div>
 

@@ -135,3 +135,10 @@ input, textarea, select {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Academic integrity: prevent text selection on assignment question content ── */
+.assignment-question-text {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}

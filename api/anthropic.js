@@ -1,19 +1,17 @@
-// Vercel Serverless Function — Anthropic API proxy.
-// Replaces the local Express server (server.js) for production.
-// The API key is injected server-side; it never reaches the browser.
-
 export default async function handler(req, res) {
-  // Handle CORS preflight
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
+  // CORS preflight
   if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     return res.status(204).end();
   }
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") return res.status(405).end();
+
+  const apiKey = process.env.VITE_ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: "API key not configured" });
   }
 
   try {
@@ -21,7 +19,7 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.VITE_ANTHROPIC_API_KEY,
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify(req.body),
@@ -31,6 +29,6 @@ export default async function handler(req, res) {
     return res.status(response.status).json(data);
   } catch (err) {
     console.error("Anthropic proxy error:", err);
-    return res.status(500).json({ error: "Proxy error" });
+    return res.status(502).json({ error: "Failed to reach Anthropic API" });
   }
 }
